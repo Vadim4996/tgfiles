@@ -17,24 +17,25 @@ const FilesPage = () => {
 
   if (!telegramUsername) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#272727] text-[#ccc]">
         <div className="mb-4 text-lg">Вы должны быть авторизованы через Telegram для доступа к вашим данным.</div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto mt-16 px-4 relative">
-      {/* Кнопка назад */}
-      <button
-        className="absolute top-0 left-0 mt-2 ml-2 p-2 rounded-full bg-muted hover:bg-muted/70 transition"
-        onClick={() => navigate(-1)}
-        aria-label="Назад"
-      >
-        <ArrowLeft size={24} />
-      </button>
-      {/* Заголовок с аватаром */}
-      <div className="flex items-center gap-4 mb-6 mt-2">
+    <div className="min-h-screen bg-[#272727] text-[#ccc] flex flex-col">
+      {/* Верхняя панель с кнопкой назад, аватаром и заголовком */}
+      <div className="flex items-center gap-4 px-6 py-4 border-b border-[#454545] bg-[#1f1f1f]">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full hover:bg-[#313131]"
+          onClick={() => navigate("/")}
+          aria-label="Назад"
+        >
+          <ArrowLeft size={24} />
+        </Button>
         <Avatar>
           {photoUrl ? (
             <AvatarImage src={photoUrl} alt="avatar" />
@@ -42,60 +43,65 @@ const FilesPage = () => {
             <AvatarFallback>{telegramUsername[0]?.toUpperCase() || "U"}</AvatarFallback>
           )}
         </Avatar>
-        <h1 className="text-2xl font-bold text-white">Моя коллекция</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Моя коллекция</h1>
       </div>
-      {error && (
-        <div className="mb-4 text-red-500">{error}</div>
-      )}
-      <div className="border rounded-lg overflow-x-auto shadow bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-16">№</TableHead>
-              <TableHead>Active</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead className="w-24"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {files.map((file) => (
-              <TableRow key={file.name}>
-                <TableCell className="font-mono text-sm text-gray-500">
-                  {file.displayId}
-                </TableCell>
-                <TableCell>
-                  <Checkbox
-                    checked={!!file.active}
-                    onCheckedChange={async (checked) => {
-                      await toggleStatus(file.name, !!checked);
-                      toast.success("Статус обновлён!");
-                    }}
-                    aria-label={file.active ? "Деактивировать" : "Активировать"}
-                  />
-                </TableCell>
-                <TableCell className="font-medium">{file.name}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => setDeleteModal({ open: true, fileName: file.name })}
-                  >
-                    Удалить
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        {files.length === 0 && (
-          <div className="p-6 text-center text-gray-500">Нет данных.</div>
-        )}
+      {/* Карточка коллекции */}
+      <div className="flex-1 flex items-center justify-center">
+        <div className="bg-[#262626] rounded-xl shadow-lg p-8 border border-[#313131] w-full max-w-4xl">
+          {error && (
+            <div className="mb-4 text-red-400">{error}</div>
+          )}
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-16">№</TableHead>
+                  <TableHead>Active</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead className="w-24"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {files.map((file) => (
+                  <TableRow key={file.name}>
+                    <TableCell className="font-mono text-sm text-[#bbb]">
+                      {file.displayId}
+                    </TableCell>
+                    <TableCell>
+                      <Checkbox
+                        checked={!!file.active}
+                        onCheckedChange={async (checked) => {
+                          await toggleStatus(file.name, !!checked);
+                          toast.success("Статус обновлён!");
+                        }}
+                        aria-label={file.active ? "Деактивировать" : "Активировать"}
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium">{file.name}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setDeleteModal({ open: true, fileName: file.name })}
+                      >
+                        Удалить
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {files.length === 0 && (
+              <div className="p-6 text-center text-[#bbb]">Нет данных.</div>
+            )}
+          </div>
+        </div>
       </div>
       {/* Модальное окно подтверждения удаления */}
       {deleteModal.open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-card rounded-lg p-6 shadow-lg w-full max-w-xs flex flex-col items-center">
-            <div className="mb-4 text-lg text-white">Удалить файл <span className="font-bold">{deleteModal.fileName}</span>?</div>
+          <div className="bg-[#262626] rounded-lg p-6 shadow-lg w-full max-w-xs flex flex-col items-center border border-[#313131]">
+            <div className="mb-4 text-lg">Удалить файл <span className="font-bold">{deleteModal.fileName}</span>?</div>
             <div className="flex gap-4">
               <Button
                 variant="destructive"
