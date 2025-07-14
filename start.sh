@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# Скрипт для запуска фронтенда и бэкенда
+# Скрипт для запуска фронтенда и бэкенда на Debian/Linux
 # Использование: ./start.sh
+
+set -e
 
 echo "🚀 Запуск Telegram Mini App..."
 
@@ -12,8 +14,8 @@ if command -v tmux &> /dev/null; then
     # Создаем новую сессию tmux
     tmux new-session -d -s miniapp
     
-    # Запускаем бэкенд в первом окне
-    tmux send-keys -t miniapp "cd server && node app.cjs" C-m
+    # Запускаем бэкенд в первом окне (HOST=0.0.0.0)
+    tmux send-keys -t miniapp "cd server && HOST=0.0.0.0 node app.js" C-m
     
     # Создаем второе окно для фронтенда
     tmux new-window -t miniapp -n frontend
@@ -25,11 +27,11 @@ if command -v tmux &> /dev/null; then
 else
     echo "📦 tmux не найден, запускаем в фоне..."
     
-    # Запускаем бэкенд в фоне
+    # Запускаем бэкенд в фоне (HOST=0.0.0.0)
     echo "🔧 Запуск бэкенда..."
-    cd server && node app.cjs &
+    cd server && HOST=0.0.0.0 node app.js &
     BACKEND_PID=$!
-    
+    cd ..
     # Ждем немного
     sleep 2
     
