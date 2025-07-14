@@ -4,10 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useState } from "react";
+import { ArrowLeft } from "lucide-react";
 
 const FilesPage = () => {
-  const { telegramUsername } = useAuth();
+  const { telegramUsername, photoUrl } = useAuth();
   const { files, toggleStatus, deleteFile, isLoading, error } = useFiles();
+  const navigate = useNavigate();
+  const [deleteModal, setDeleteModal] = useState<{ open: boolean; fileName: string | null }>({ open: false, fileName: null });
 
   if (!telegramUsername) {
     return (
@@ -18,12 +24,30 @@ const FilesPage = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto mt-16 px-4">
-      <h1 className="text-2xl font-bold mb-6">Коллекция пользователя <span className="text-blue-700">{telegramUsername}</span></h1>
+    <div className="max-w-4xl mx-auto mt-16 px-4 relative">
+      {/* Кнопка назад */}
+      <button
+        className="absolute top-0 left-0 mt-2 ml-2 p-2 rounded-full bg-muted hover:bg-muted/70 transition"
+        onClick={() => navigate(-1)}
+        aria-label="Назад"
+      >
+        <ArrowLeft size={24} />
+      </button>
+      {/* Заголовок с аватаром */}
+      <div className="flex items-center gap-4 mb-6 mt-2">
+        <Avatar>
+          {photoUrl ? (
+            <AvatarImage src={photoUrl} alt="avatar" />
+          ) : (
+            <AvatarFallback>{telegramUsername[0]?.toUpperCase() || "U"}</AvatarFallback>
+          )}
+        </Avatar>
+        <h1 className="text-2xl font-bold text-white">Моя коллекция</h1>
+      </div>
       {error && (
         <div className="mb-4 text-red-500">{error}</div>
       )}
-      <div className="border rounded-lg overflow-x-auto shadow bg-white">
+      <div className="border rounded-lg overflow-x-auto shadow bg-card">
         <Table>
           <TableHeader>
             <TableRow>
@@ -54,10 +78,7 @@ const FilesPage = () => {
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={async () => {
-                      await deleteFile(file.name);
-                      toast.success("Строка удалена!");
-                    }}
+                    onClick={() => setDeleteModal({ open: true, fileName: file.name })}
                   >
                     Удалить
                   </Button>
@@ -70,6 +91,34 @@ const FilesPage = () => {
           <div className="p-6 text-center text-gray-500">Нет данных.</div>
         )}
       </div>
+      {/* Модальное окно подтверждения удаления */}
+      {deleteModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-card rounded-lg p-6 shadow-lg w-full max-w-xs flex flex-col items-center">
+            <div className="mb-4 text-lg text-white">Удалить файл <span className="font-bold">{deleteModal.fileName}</span>?</div>
+            <div className="flex gap-4">
+              <Button
+                variant="destructive"
+                onClick={async () => {
+                  if (deleteModal.fileName) {
+                    await deleteFile(deleteModal.fileName);
+                    toast.success("Строка удалена!");
+                  }
+                  setDeleteModal({ open: false, fileName: null });
+                }}
+              >
+                Да, удалить
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setDeleteModal({ open: false, fileName: null })}
+              >
+                Отмена
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

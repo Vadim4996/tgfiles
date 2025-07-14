@@ -11,6 +11,7 @@ declare global {
             username?: string;
             first_name?: string;
             last_name?: string;
+            photo_url?: string; // Added photo_url
           };
         };
         initData?: string;
@@ -29,6 +30,7 @@ function cleanUsername(username: string): string {
 
 export function useAuth() {
   let telegramUsername: string | null = null;
+  let photoUrl: string | null = null;
   
   // Проверяем Telegram WebApp API
   if (typeof window !== "undefined" && window.Telegram?.WebApp) {
@@ -41,12 +43,13 @@ export function useAuth() {
       user: webApp.initDataUnsafe?.user
     });
     
-    // Пытаемся получить username из разных источников
+    // Пытаемся получить username и photo_url из разных источников
     if (webApp.initDataUnsafe?.user?.username) {
       telegramUsername = cleanUsername(webApp.initDataUnsafe.user.username);
-      console.log("Username получен из Telegram WebApp:", telegramUsername);
+      photoUrl = webApp.initDataUnsafe.user.photo_url || null;
+      console.log("Username и photo_url получены из Telegram WebApp:", telegramUsername, photoUrl);
     } else if (webApp.initData) {
-      // Пытаемся парсить initData для получения username
+      // Пытаемся парсить initData для получения username и photo_url
       try {
         const urlParams = new URLSearchParams(webApp.initData);
         const userStr = urlParams.get('user');
@@ -54,8 +57,11 @@ export function useAuth() {
           const user = JSON.parse(decodeURIComponent(userStr));
           if (user.username) {
             telegramUsername = cleanUsername(user.username);
-            console.log("Username получен из initData:", telegramUsername);
           }
+          if (user.photo_url) {
+            photoUrl = user.photo_url;
+          }
+          console.log("Username и photo_url получены из initData:", telegramUsername, photoUrl);
         }
       } catch (e) {
         console.log("Ошибка парсинга initData:", e);
@@ -82,5 +88,5 @@ export function useAuth() {
     }
   }
   
-  return { telegramUsername };
+  return { telegramUsername, photoUrl };
 }
