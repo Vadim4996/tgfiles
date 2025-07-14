@@ -1,0 +1,21 @@
+{
+  "name": "telegram-mini-app-server",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "description": "Backend server for Telegram Mini App",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node app.js"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "picomatch": "^4.0.2"
+  }
+}
