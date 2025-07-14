@@ -64,22 +64,45 @@ app.get("/api/vector-collections/:username", async (req, res) => {
   }
 });
 
-// Удалить строку по name
+// Удалить строку по name с каскадным удалением векторов
 app.delete("/api/vector-collections/:username/:name", async (req, res) => {
   const { username, name } = req.params;
-  const table = `${username}_vector_collections`;
-  
-  console.log(`Удаление строки с name='${name}' из таблицы ${table}`);
-  
+  const collectionsTable = `${username}_vector_collections`;
+  const vectorsTable = `${username}_rag_vectors`;
+
+  console.log(`Удаление коллекции с name='${name}' из таблицы ${collectionsTable} и связанных векторов из ${vectorsTable}`);
+
+  const client = await pool.connect();
   try {
-    await pool.query(
-      `DELETE FROM ${table} WHERE name = $1`,
+    await client.query('BEGIN');
+    // Получаем uuid коллекции по name
+    const uuidResult = await client.query(
+      `SELECT uuid FROM ${collectionsTable} WHERE name = $1`,
       [name]
     );
+    if (uuidResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Коллекция не найдена' });
+    }
+    const uuid = uuidResult.rows[0].uuid;
+    // Удаляем все rag_vectors с этим collection_id
+    await client.query(
+      `DELETE FROM ${vectorsTable} WHERE collection_id = $1`,
+      [uuid]
+    );
+    // Удаляем саму коллекцию
+    await client.query(
+      `DELETE FROM ${collectionsTable} WHERE name = $1`,
+      [name]
+    );
+    await client.query('COMMIT');
     res.json({ success: true });
   } catch (e) {
-    console.error(`Ошибка при удалении строки из таблицы ${table}:`, e);
-    res.status(500).json({ error: "Ошибка удаления", details: e.message });
+    await client.query('ROLLBACK');
+    console.error(`Ошибка при каскадном удалении коллекции и векторов:`, e);
+    res.status(500).json({ error: 'Ошибка каскадного удаления', details: e.message });
+  } finally {
+    client.release();
   }
 });
 
