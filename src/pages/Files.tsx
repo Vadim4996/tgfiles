@@ -9,6 +9,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import folderIcon from '/folder.png';
+import { useRef } from "react";
 
 const FilesPage = () => {
   const { telegramUsername, photoUrl } = useAuth();
@@ -26,6 +27,7 @@ const FilesPage = () => {
   const [renameModal, setRenameModal] = useState<{ open: boolean; folder: FolderRow | null }>({ open: false, folder: null });
   const [renameValue, setRenameValue] = useState("");
   const [deleteModalFolder, setDeleteModalFolder] = useState<{ open: boolean; folder: FolderRow | null }>({ open: false, folder: null });
+  const [dragOverNoFolder, setDragOverNoFolder] = useState(false);
 
   if (!telegramUsername) {
     return (
@@ -42,28 +44,36 @@ const FilesPage = () => {
       .filter(f => f.parent_id === parentId)
       .sort((a, b) => a.name.localeCompare(b.name, 'ru', { sensitivity: 'base' }));
 
+    const [dragOverFolder, setDragOverFolder] = useState<number | null>(null);
     return (
       <>
         {currentFolders.map(folder => {
           // Файлы в этой папке
           const filesInFolder = files.filter(file => file.folder_id === folder.id);
+          // Статус папки
+          const allActive = filesInFolder.length > 0 && filesInFolder.every(f => f.active);
+          const anyActive = filesInFolder.some(f => f.active);
           return (
             <div
               key={folder.id}
-              className="bg-[#232323] rounded-lg border border-[#313131] mb-2"
-              draggable
-              onDragStart={() => setDraggedFolderId(folder.id)}
-              onDragOver={e => { e.preventDefault(); }}
-              onDrop={async () => {
-                if (draggedFolderId && draggedFolderId !== folder.id) {
-                  try {
-                    await renameFolder(draggedFolderId, null, folder.id); // переместить draggedFolderId в folder.id
-                    toast.success("Папка перемещена");
-                    refetchFolders();
-                  } catch (e: any) {
-                    toast.error(e.message || "Ошибка перемещения папки");
-                  }
-                  setDraggedFolderId(null);
+              className={`bg-[#232323] rounded-lg border border-[#313131] mb-2 ${dragOverFolder === folder.id ? 'ring-2 ring-green-500' : ''}`}
+              onDragOver={e => { e.preventDefault(); setDragOverFolder(folder.id); }}
+              onDragLeave={() => setDragOverFolder(null)}
+              onDrop={async (e) => {
+                setDragOverFolder(null);
+                const fileName = e.dataTransfer.getData('text/plain');
+                if (!fileName) return;
+                try {
+                  const res = await fetch(`/api/vector-collections/${telegramUsername}/move`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: fileName, folder_id: folder.id }),
+                  });
+                  if (!res.ok) throw new Error('Ошибка перемещения файла');
+                  toast.success('Файл перемещён');
+                  window.location.reload();
+                } catch (e: any) {
+                  toast.error(e.message || 'Ошибка перемещения файла');
                 }
               }}
             >
@@ -73,50 +83,36 @@ const FilesPage = () => {
               >
                 <img src={folderIcon} alt="Папка" className="w-5 h-5" />
                 <span className="font-semibold text-[#e0e0e0]">{folder.name}</span>
-                <span className="ml-auto text-xs text-[#888]">{expandedFolders[folder.id] ? '▲' : '▼'}</span>
-                {/* Массовые действия */}
-                <div className="flex gap-1 ml-2" onClick={e => e.stopPropagation()}>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs px-2 py-1"
-                    onClick={async () => {
-                      await Promise.all(filesInFolder.map(f => f.active ? null : toggleStatus(f.name, true)));
-                      toast.success("Все файлы в папке активированы");
+                <span className="ml-auto flex items-center gap-2">
+                  <Checkbox
+                    checked={allActive}
+                    onCheckedChange={async (checked) => {
+                      await Promise.all(filesInFolder.map(f => f.active === checked ? null : toggleStatus(f.name, checked)));
+                      toast.success(checked ? "Все файлы в папке активированы" : "Все файлы в папке деактивированы");
                     }}
-                    disabled={filesInFolder.length === 0 || filesInFolder.every(f => f.active)}
-                  >
-                    Активировать все
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs px-2 py-1"
-                    onClick={async () => {
-                      await Promise.all(filesInFolder.map(f => !f.active ? null : toggleStatus(f.name, false)));
-                      toast.success("Все файлы в папке деактивированы");
-                    }}
-                    disabled={filesInFolder.length === 0 || filesInFolder.every(f => !f.active)}
-                  >
-                    Деактивировать все
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="text-xs px-2 py-1"
-                    onClick={() => setRenameModal({ open: true, folder })}
-                  >
-                    Переименовать
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="text-xs px-2 py-1"
-                    onClick={() => setDeleteModalFolder({ open: true, folder })}
-                  >
-                    Удалить
-                  </Button>
-                </div>
+                    aria-label={allActive ? "Деактивировать все" : "Активировать все"}
+                    disabled={filesInFolder.length === 0}
+                  />
+                  <span className={allActive ? 'text-green-400 font-semibold' : 'text-red-400 font-semibold'}>
+                    {allActive ? 'Активно' : 'Не активно'}
+                  </span>
+                </span>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="text-xs px-2 py-1"
+                  onClick={() => setRenameModal({ open: true, folder })}
+                >
+                  Переименовать
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="text-xs px-2 py-1"
+                  onClick={() => setDeleteModalFolder({ open: true, folder })}
+                >
+                  Удалить
+                </Button>
               </div>
               {expandedFolders[folder.id] && (
                 <div className="pl-4">
@@ -212,7 +208,7 @@ const FilesPage = () => {
       </div>
       {/* Карточка коллекции */}
       <div className="flex-1 flex items-center justify-center">
-        <div className="bg-[#262626] rounded-xl shadow-lg p-8 border border-[#313131] w-full max-w-4xl">
+        <div className="bg-[#262626] rounded-xl shadow-lg p-2 border border-[#313131] w-full max-w-4xl">
           {error && (
             <div className="mb-4 text-red-400">{error}</div>
           )}
@@ -241,38 +237,30 @@ const FilesPage = () => {
                 setDeleteModal={setDeleteModal}
               />
               {/* Файлы без папки */}
-              <div className="bg-[#232323] rounded-lg border border-[#313131]">
-                <div className="flex items-center gap-2 px-4 py-2 select-none">
-                  <span className="font-semibold text-[#e0e0e0]">Без папки</span>
-                  {/* Массовые действия для файлов без папки */}
-                  <div className="flex gap-1 ml-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs px-2 py-1"
-                      onClick={async () => {
-                        const filesNoFolder = files.filter(f => !f.folder_id);
-                        await Promise.all(filesNoFolder.map(f => f.active ? null : toggleStatus(f.name, true)));
-                        toast.success("Все файлы без папки активированы");
-                      }}
-                      disabled={files.filter(f => !f.folder_id).length === 0 || files.filter(f => !f.folder_id).every(f => f.active)}
-                    >
-                      Активировать все
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs px-2 py-1"
-                      onClick={async () => {
-                        const filesNoFolder = files.filter(f => !f.folder_id);
-                        await Promise.all(filesNoFolder.map(f => !f.active ? null : toggleStatus(f.name, false)));
-                        toast.success("Все файлы без папки деактивированы");
-                      }}
-                      disabled={files.filter(f => !f.folder_id).length === 0 || files.filter(f => !f.folder_id).every(f => !f.active)}
-                    >
-                      Деактивировать все
-                    </Button>
-                  </div>
+              <div
+                className={`bg-[#232323] rounded-lg border border-[#313131] ${dragOverNoFolder ? 'ring-2 ring-green-500' : ''}`}
+                onDragOver={e => { e.preventDefault(); setDragOverNoFolder(true); }}
+                onDragLeave={() => setDragOverNoFolder(false)}
+                onDrop={async (e) => {
+                  setDragOverNoFolder(false);
+                  const fileName = e.dataTransfer.getData('text/plain');
+                  if (!fileName) return;
+                  try {
+                    const res = await fetch(`/api/vector-collections/${telegramUsername}/move`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ name: fileName, folder_id: null }),
+                    });
+                    if (!res.ok) throw new Error('Ошибка перемещения файла');
+                    toast.success('Файл перемещён');
+                    window.location.reload();
+                  } catch (e: any) {
+                    toast.error(e.message || 'Ошибка перемещения файла');
+                  }
+                }}
+              >
+                <div className="w-full flex justify-center items-center px-2 py-2 select-none">
+                  <span className="font-semibold text-[#e0e0e0] text-center text-lg">Без папки</span>
                 </div>
                 <div className="overflow-x-auto">
                   <Table className="min-w-[600px]">
@@ -281,6 +269,7 @@ const FilesPage = () => {
                         <TableHead className="w-16 sticky left-0 bg-[#232323] z-10">№</TableHead>
                         <TableHead className="w-24">Active</TableHead>
                         <TableHead className="max-w-[240px] min-w-[120px] break-words whitespace-pre-line">Name</TableHead>
+                        <TableHead className="w-40">Переместить</TableHead>
                         <TableHead className="w-24 sticky right-0 bg-[#232323] z-10"></TableHead>
                       </TableRow>
                     </TableHeader>
@@ -289,7 +278,22 @@ const FilesPage = () => {
                         .filter(file => !file.folder_id)
                         .sort((a, b) => a.name.localeCompare(b.name, 'ru', { sensitivity: 'base' }))
                         .map((file, idx) => (
-                          <TableRow key={file.name}>
+                          <TableRow
+                            key={file.name}
+                            draggable
+                            onDragStart={e => e.dataTransfer.setData('text/plain', file.name)}
+                            // Для мобильных long-press
+                            onTouchStart={e => {
+                              const timeout = window.setTimeout(() => {
+                                // Начать drag (эмулировать)
+                                // Можно реализовать кастомный drag preview
+                              }, 500);
+                              (e.currentTarget as any).dataset.dragTimeout = String(timeout);
+                            }}
+                            onTouchEnd={e => {
+                              clearTimeout(Number((e.currentTarget as any).dataset.dragTimeout));
+                            }}
+                          >
                             <TableCell className="font-mono text-sm text-[#bbb] sticky left-0 bg-[#232323] z-10">{idx + 1}</TableCell>
                             <TableCell>
                               <Checkbox
@@ -305,6 +309,37 @@ const FilesPage = () => {
                               {file.name.length > 40
                                 ? file.name.replace(/(.{40})/g, '$1\n')
                                 : file.name}
+                            </TableCell>
+                            <TableCell>
+                              <select
+                                className="rounded bg-[#191919] border border-[#444] px-2 py-1 text-[#eee]"
+                                value={''}
+                                onChange={async (e) => {
+                                  const folderId = Number(e.target.value);
+                                  if (!folderId) return;
+                                  try {
+                                    // PATCH запрос для перемещения файла
+                                    const res = await fetch(`/api/vector-collections/${telegramUsername}/move`, {
+                                      method: 'PATCH',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ name: file.name, folder_id: folderId }),
+                                    });
+                                    if (!res.ok) throw new Error('Ошибка перемещения файла');
+                                    toast.success('Файл перемещён');
+                                    // Обновить список файлов
+                                    window.location.reload(); // или refetch, если реализовано
+                                  } catch (e: any) {
+                                    toast.error(e.message || 'Ошибка перемещения файла');
+                                  }
+                                }}
+                              >
+                                <option value="">В папку...</option>
+                                {folders
+                                  .sort((a, b) => a.name.localeCompare(b.name, 'ru', { sensitivity: 'base' }))
+                                  .map(folder => (
+                                    <option key={folder.id} value={folder.id}>{folder.name}</option>
+                                  ))}
+                              </select>
                             </TableCell>
                             <TableCell className="sticky right-0 bg-[#232323] z-10">
                               <Button
