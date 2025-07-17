@@ -126,6 +126,131 @@ app.post("/api/vector-collections/:username/toggle", async (req, res) => {
   }
 });
 
+// Получить все папки пользователя
+app.get("/api/folders/:username", async (req, res) => {
+  const { username } = req.params;
+  try {
+    const result = await pool.query(
+      "SELECT * FROM folders WHERE username = $1",
+      [username]
+    );
+    res.json({ rows: result.rows });
+  } catch (e) {
+    console.error("Ошибка при получении папок:", e);
+    res.status(500).json({ error: "Ошибка получения папок", details: e.message });
+  }
+});
+
+// Создать новую папку
+app.post("/api/folders/:username", async (req, res) => {
+  const { username } = req.params;
+  const { name, parent_id } = req.body;
+  try {
+    // Проверка на дубликаты в рамках одного родителя
+    const exists = await pool.query(
+      "SELECT 1 FROM folders WHERE username = $1 AND name = $2 AND parent_id IS NOT DISTINCT FROM $3",
+      [username, name, parent_id]
+    );
+    if (exists.rows.length > 0) {
+      return res.status(400).json({ error: "Папка с таким именем уже существует в выбранном разделе" });
+    }
+    const result = await pool.query(
+      "INSERT INTO folders (username, name, parent_id) VALUES ($1, $2, $3) RETURNING *",
+      [username, name, parent_id]
+    );
+    res.json({ folder: result.rows[0] });
+  } catch (e) {
+    console.error("Ошибка при создании папки:", e);
+    res.status(500).json({ error: "Ошибка создания папки", details: e.message });
+  }
+});
+
+// Удалить папку (и все вложенные папки и файлы)
+app.delete("/api/folders/:username/:folderId", async (req, res) => {
+  const { username, folderId } = req.params;
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    // Рекурсивно найти все вложенные папки
+    const toDelete = [];
+    async function collectFolders(id) {
+      toDelete.push(id);
+      const children = await client.query(
+        "SELECT id FROM folders WHERE parent_id = $1 AND username = $2",
+        [id, username]
+      );
+      for (const row of children.rows) {
+        await collectFolders(row.id);
+      }
+    }
+    await collectFolders(Number(folderId));
+    // Удалить все файлы из коллекций, привязанных к этим папкам
+    for (const id of toDelete) {
+      await client.query(
+        `UPDATE ${username}_vector_collections SET folder_id = NULL WHERE folder_id = $1`,
+        [id]
+      );
+    }
+    // Удалить папки
+    await client.query(
+      `DELETE FROM folders WHERE id = ANY($1::int[]) AND username = $2`,
+      [toDelete, username]
+    );
+    await client.query('COMMIT');
+    res.json({ success: true });
+  } catch (e) {
+    await client.query('ROLLBACK');
+    console.error("Ошибка при удалении папки:", e);
+    res.status(500).json({ error: "Ошибка удаления папки", details: e.message });
+  } finally {
+    client.release();
+  }
+});
+
+// Переименовать или переместить папку
+app.patch("/api/folders/:username/:folderId", async (req, res) => {
+  const { username, folderId } = req.params;
+  const { name, parent_id } = req.body;
+  try {
+    // Проверка на дубликаты при переименовании
+    if (name) {
+      const exists = await pool.query(
+        "SELECT 1 FROM folders WHERE username = $1 AND name = $2 AND parent_id IS NOT DISTINCT FROM $3 AND id != $4",
+        [username, name, parent_id ?? null, folderId]
+      );
+      if (exists.rows.length > 0) {
+        return res.status(400).json({ error: "Папка с таким именем уже существует в выбранном разделе" });
+      }
+    }
+    // Обновить имя и/или parent_id
+    const fields = [];
+    const values = [];
+    let idx = 1;
+    if (name) {
+      fields.push(`name = $${idx++}`);
+      values.push(name);
+    }
+    if (typeof parent_id !== 'undefined') {
+      fields.push(`parent_id = $${idx++}`);
+      values.push(parent_id);
+    }
+    if (fields.length === 0) {
+      return res.status(400).json({ error: "Нет данных для обновления" });
+    }
+    values.push(username);
+    values.push(folderId);
+    const setClause = fields.join(', ');
+    const result = await pool.query(
+      `UPDATE folders SET ${setClause} WHERE username = $${idx++} AND id = $${idx} RETURNING *`,
+      values
+    );
+    res.json({ folder: result.rows[0] });
+  } catch (e) {
+    console.error("Ошибка при обновлении папки:", e);
+    res.status(500).json({ error: "Ошибка обновления папки", details: e.message });
+  }
+});
+
 // Добавьте здесь другие эндпоинты/Webhook для Telegram!
 
 const PORT = process.env.PORT || 3001;
