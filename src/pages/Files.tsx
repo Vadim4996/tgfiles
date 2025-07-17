@@ -1,5 +1,5 @@
 import { useAuth } from "@/utils/use-auth";
-import { useFiles, useFolders, FolderRow } from "@/utils/use-files";
+import { useFiles, useFolders, FolderRow, FileRow } from "@/utils/use-files";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,6 +10,7 @@ import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import folderIcon from '/folder.png';
 import { useRef } from "react";
+import gearIcon from '/gear.png';
 
 const FilesPage = () => {
   const { telegramUsername, photoUrl } = useAuth();
@@ -28,6 +29,9 @@ const FilesPage = () => {
   const [renameValue, setRenameValue] = useState("");
   const [deleteModalFolder, setDeleteModalFolder] = useState<{ open: boolean; folder: FolderRow | null }>({ open: false, folder: null });
   const [dragOverNoFolder, setDragOverNoFolder] = useState(false);
+  const [fileMenu, setFileMenu] = useState<{ open: boolean; file: FileRow | null; anchor: HTMLElement | null }>({ open: false, file: null, anchor: null });
+  const [folderMenu, setFolderMenu] = useState<{ open: boolean; folder: FolderRow | null; anchor: HTMLElement | null }>({ open: false, folder: null, anchor: null });
+  const [moveFile, setMoveFile] = useState<FileRow | null>(null);
 
   if (!telegramUsername) {
     return (
@@ -96,22 +100,13 @@ const FilesPage = () => {
                     />
                   </span>
                 </span>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="text-xs px-2 py-1"
-                  onClick={() => setRenameModal({ open: true, folder })}
+                <button
+                  className="p-1 rounded hover:bg-[#333] ml-2"
+                  onClick={e => { e.stopPropagation(); setFolderMenu({ open: true, folder, anchor: e.currentTarget }); }}
+                  aria-label="Меню папки"
                 >
-                  Переименовать
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="text-xs px-2 py-1"
-                  onClick={() => setDeleteModalFolder({ open: true, folder })}
-                >
-                  Удалить
-                </Button>
+                  <img src={gearIcon} alt="Меню" className="w-5 h-5" />
+                </button>
               </div>
               {expandedFolders[folder.id] && (
                 <div className="pl-4">
@@ -158,13 +153,13 @@ const FilesPage = () => {
                                   : file.name}
                               </TableCell>
                               <TableCell className="sticky right-0 bg-[#232323] z-10">
-                                <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  onClick={() => setDeleteModal({ open: true, fileName: file.name })}
+                                <button
+                                  className="p-1 rounded hover:bg-[#333]"
+                                  onClick={e => setFileMenu({ open: true, file, anchor: e.currentTarget })}
+                                  aria-label="Меню файла"
                                 >
-                                  Удалить
-                                </Button>
+                                  <img src={gearIcon} alt="Меню" className="w-5 h-5" />
+                                </button>
                               </TableCell>
                             </TableRow>
                           ))}
@@ -548,6 +543,99 @@ const FilesPage = () => {
               >
                 Отмена
               </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      {fileMenu.open && fileMenu.file && (
+        <div
+          className="fixed z-50 left-0 top-0 w-full h-full bg-black/10"
+          onClick={() => setFileMenu({ open: false, file: null, anchor: null })}
+        >
+          <div
+            className="absolute bg-[#232323] border border-[#444] rounded shadow-lg p-2 min-w-[120px]"
+            style={{ left: fileMenu.anchor?.getBoundingClientRect().left ?? 0, top: (fileMenu.anchor?.getBoundingClientRect().bottom ?? 0) + window.scrollY }}
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              className="block w-full text-left px-2 py-1 hover:bg-[#333] text-red-400"
+              onClick={async () => {
+                setFileMenu({ open: false, file: null, anchor: null });
+                setDeleteModal({ open: true, fileName: fileMenu.file!.name });
+              }}
+            >Удалить</button>
+            <button
+              className="block w-full text-left px-2 py-1 hover:bg-[#333]"
+              onClick={() => {
+                setFileMenu({ open: false, file: null, anchor: null });
+                setMoveFile(fileMenu.file);
+              }}
+            >Переместить</button>
+          </div>
+        </div>
+      )}
+      {folderMenu.open && folderMenu.folder && (
+        <div
+          className="fixed z-50 left-0 top-0 w-full h-full bg-black/10"
+          onClick={() => setFolderMenu({ open: false, folder: null, anchor: null })}
+        >
+          <div
+            className="absolute bg-[#232323] border border-[#444] rounded shadow-lg p-2 min-w-[120px]"
+            style={{ left: folderMenu.anchor?.getBoundingClientRect().left ?? 0, top: (folderMenu.anchor?.getBoundingClientRect().bottom ?? 0) + window.scrollY }}
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              className="block w-full text-left px-2 py-1 hover:bg-[#333] text-red-400"
+              onClick={() => {
+                setFolderMenu({ open: false, folder: null, anchor: null });
+                setDeleteModalFolder({ open: true, folder: folderMenu.folder });
+              }}
+            >Удалить</button>
+            <button
+              className="block w-full text-left px-2 py-1 hover:bg-[#333]"
+              onClick={() => {
+                setFolderMenu({ open: false, folder: null, anchor: null });
+                setRenameModal({ open: true, folder: folderMenu.folder });
+                setRenameValue(folderMenu.folder.name);
+              }}
+            >Переименовать</button>
+          </div>
+        </div>
+      )}
+      {moveFile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-[#262626] rounded-lg p-6 shadow-lg w-full max-w-xs flex flex-col items-center border border-[#313131]">
+            <div className="mb-4 text-lg">Переместить файл <span className="font-bold">{moveFile.name}</span> в папку:</div>
+            <select
+              className="w-full rounded bg-[#191919] border border-[#444] px-3 py-2 text-[#eee] focus:outline-none"
+              value={''}
+              onChange={async (e) => {
+                const folderId = Number(e.target.value);
+                if (!folderId) return;
+                try {
+                  const res = await fetch(`/api/vector-collections/${telegramUsername}/move`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: moveFile.name, folder_id: folderId }),
+                  });
+                  if (!res.ok) throw new Error('Ошибка перемещения файла');
+                  toast.success('Файл перемещён');
+                  setMoveFile(null);
+                  window.location.reload();
+                } catch (e: any) {
+                  toast.error(e.message || 'Ошибка перемещения файла');
+                }
+              }}
+            >
+              <option value="">В папку...</option>
+              {folders
+                .sort((a, b) => a.name.localeCompare(b.name, 'ru', { sensitivity: 'base' }))
+                .map(folder => (
+                  <option key={folder.id} value={folder.id}>{folder.name}</option>
+                ))}
+            </select>
+            <div className="flex gap-4 mt-4">
+              <Button variant="secondary" onClick={() => setMoveFile(null)}>Отмена</Button>
             </div>
           </div>
         </div>
