@@ -581,7 +581,10 @@ const FilesPage = () => {
         >
           <div
             className="absolute bg-[#232323] border border-[#444] rounded shadow-lg p-2 min-w-[120px]"
-            style={{ left: folderMenu.anchor?.getBoundingClientRect().left ?? 0, top: (folderMenu.anchor?.getBoundingClientRect().bottom ?? 0) + window.scrollY }}
+            style={{
+              left: (folderMenu.anchor?.getBoundingClientRect().left ?? 0) - 120 + window.scrollX,
+              top: (folderMenu.anchor?.getBoundingClientRect().bottom ?? 0) + window.scrollY
+            }}
             onClick={e => e.stopPropagation()}
           >
             <button
@@ -604,8 +607,10 @@ const FilesPage = () => {
       )}
       {moveFile && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-[#262626] rounded-lg p-6 shadow-lg w-full max-w-xs flex flex-col items-center border border-[#313131]">
-            <div className="mb-4 text-lg">Переместить файл <span className="font-bold">{moveFile.name}</span> в папку:</div>
+          <div className="bg-[#262626] rounded-lg p-6 shadow-lg w-full max-w-xs flex flex-col items-center border border-[#313131] max-w-[95vw] min-w-[240px]">
+            <div className="mb-4 text-lg break-words text-center w-full" style={{wordBreak: 'break-word', overflowWrap: 'break-word'}}>
+              Переместить файл <span className="font-bold">{moveFile.name}</span> в папку:
+            </div>
             <select
               className="w-full rounded bg-[#191919] border border-[#444] px-3 py-2 text-[#eee] focus:outline-none"
               value={''}
