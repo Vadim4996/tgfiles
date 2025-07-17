@@ -53,7 +53,7 @@ app.get("/api/vector-collections/:username", async (req, res) => {
     }
     
     const result = await pool.query(
-      `SELECT name, active FROM ${table} ORDER BY name ASC`
+      `SELECT name, active, folder_id FROM ${table} ORDER BY name ASC`
     );
     
     console.log(`Получено ${result.rows.length} строк из таблицы ${table}`);
