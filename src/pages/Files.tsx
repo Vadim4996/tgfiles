@@ -1,5 +1,5 @@
 import { useAuth } from "@/utils/use-auth";
-import { useFiles } from "@/utils/use-files";
+import { useFiles, useFolders, FolderRow } from "@/utils/use-files";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,18 +8,183 @@ import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
+import folderIcon from '/folder.png';
 
 const FilesPage = () => {
   const { telegramUsername, photoUrl } = useAuth();
   const { files, toggleStatus, deleteFile, isLoading, error } = useFiles();
+  const { folders, refetchFolders, createFolder, deleteFolder, renameFolder } = useFolders();
+  const [expandedFolders, setExpandedFolders] = useState<{ [id: number]: boolean }>({});
   const navigate = useNavigate();
   const [deleteModal, setDeleteModal] = useState<{ open: boolean; fileName: string | null }>({ open: false, fileName: null });
+  const [createFolderModal, setCreateFolderModal] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+  const [newFolderParent, setNewFolderParent] = useState<number | null>(null);
+  const [creatingFolder, setCreatingFolder] = useState(false);
+  // Drag-and-drop state
+  const [draggedFolderId, setDraggedFolderId] = useState<number | null>(null);
+  const [renameModal, setRenameModal] = useState<{ open: boolean; folder: FolderRow | null }>({ open: false, folder: null });
+  const [renameValue, setRenameValue] = useState("");
+  const [deleteModalFolder, setDeleteModalFolder] = useState<{ open: boolean; folder: FolderRow | null }>({ open: false, folder: null });
 
   if (!telegramUsername) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-[#272727] text-[#ccc]">
         <div className="mb-4 text-lg">Вы должны быть авторизованы через Telegram для доступа к вашим данным.</div>
       </div>
+    );
+  }
+
+  // Рекурсивный компонент для дерева папок
+  function FolderTree({ parentId, folders, files, expandedFolders, setExpandedFolders, toggleStatus, setDeleteModal }) {
+    // Получаем папки текущего уровня
+    const currentFolders = folders
+      .filter(f => f.parent_id === parentId)
+      .sort((a, b) => a.name.localeCompare(b.name, 'ru', { sensitivity: 'base' }));
+
+    return (
+      <>
+        {currentFolders.map(folder => {
+          // Файлы в этой папке
+          const filesInFolder = files.filter(file => file.folder_id === folder.id);
+          return (
+            <div
+              key={folder.id}
+              className="bg-[#232323] rounded-lg border border-[#313131] mb-2"
+              draggable
+              onDragStart={() => setDraggedFolderId(folder.id)}
+              onDragOver={e => { e.preventDefault(); }}
+              onDrop={async () => {
+                if (draggedFolderId && draggedFolderId !== folder.id) {
+                  try {
+                    await renameFolder(draggedFolderId, null, folder.id); // переместить draggedFolderId в folder.id
+                    toast.success("Папка перемещена");
+                    refetchFolders();
+                  } catch (e: any) {
+                    toast.error(e.message || "Ошибка перемещения папки");
+                  }
+                  setDraggedFolderId(null);
+                }
+              }}
+            >
+              <div
+                className="flex items-center gap-2 px-4 py-2 cursor-pointer select-none hover:bg-[#292929] rounded-t-lg"
+                onClick={() => setExpandedFolders(prev => ({ ...prev, [folder.id]: !prev[folder.id] }))}
+              >
+                <img src={folderIcon} alt="Папка" className="w-5 h-5" />
+                <span className="font-semibold text-[#e0e0e0]">{folder.name}</span>
+                <span className="ml-auto text-xs text-[#888]">{expandedFolders[folder.id] ? '▲' : '▼'}</span>
+                {/* Массовые действия */}
+                <div className="flex gap-1 ml-2" onClick={e => e.stopPropagation()}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs px-2 py-1"
+                    onClick={async () => {
+                      await Promise.all(filesInFolder.map(f => f.active ? null : toggleStatus(f.name, true)));
+                      toast.success("Все файлы в папке активированы");
+                    }}
+                    disabled={filesInFolder.length === 0 || filesInFolder.every(f => f.active)}
+                  >
+                    Активировать все
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs px-2 py-1"
+                    onClick={async () => {
+                      await Promise.all(filesInFolder.map(f => !f.active ? null : toggleStatus(f.name, false)));
+                      toast.success("Все файлы в папке деактивированы");
+                    }}
+                    disabled={filesInFolder.length === 0 || filesInFolder.every(f => !f.active)}
+                  >
+                    Деактивировать все
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="text-xs px-2 py-1"
+                    onClick={() => setRenameModal({ open: true, folder })}
+                  >
+                    Переименовать
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="text-xs px-2 py-1"
+                    onClick={() => setDeleteModalFolder({ open: true, folder })}
+                  >
+                    Удалить
+                  </Button>
+                </div>
+              </div>
+              {expandedFolders[folder.id] && (
+                <div className="pl-4">
+                  {/* Вложенные папки */}
+                  <FolderTree
+                    parentId={folder.id}
+                    folders={folders}
+                    files={files}
+                    expandedFolders={expandedFolders}
+                    setExpandedFolders={setExpandedFolders}
+                    toggleStatus={toggleStatus}
+                    setDeleteModal={setDeleteModal}
+                  />
+                  {/* Файлы в этой папке */}
+                  <div className="overflow-x-auto">
+                    <Table className="min-w-[600px]">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-16 sticky left-0 bg-[#232323] z-10">№</TableHead>
+                          <TableHead className="w-24">Active</TableHead>
+                          <TableHead className="max-w-[240px] min-w-[120px] break-words whitespace-pre-line">Name</TableHead>
+                          <TableHead className="w-24 sticky right-0 bg-[#232323] z-10"></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filesInFolder
+                          .sort((a, b) => a.name.localeCompare(b.name, 'ru', { sensitivity: 'base' }))
+                          .map((file, idx) => (
+                            <TableRow key={file.name}>
+                              <TableCell className="font-mono text-sm text-[#bbb] sticky left-0 bg-[#232323] z-10">{idx + 1}</TableCell>
+                              <TableCell>
+                                <Checkbox
+                                  checked={!!file.active}
+                                  onCheckedChange={async (checked) => {
+                                    await toggleStatus(file.name, !!checked);
+                                    toast.success("Статус обновлён!");
+                                  }}
+                                  aria-label={file.active ? "Деактивировать" : "Активировать"}
+                                />
+                              </TableCell>
+                              <TableCell className="font-medium max-w-[240px] min-w-[120px] break-words whitespace-pre-line" style={{wordBreak: 'break-word', whiteSpace: 'pre-line'}}>
+                                {file.name.length > 40
+                                  ? file.name.replace(/(.{40})/g, '$1\n')
+                                  : file.name}
+                              </TableCell>
+                              <TableCell className="sticky right-0 bg-[#232323] z-10">
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => setDeleteModal({ open: true, fileName: file.name })}
+                                >
+                                  Удалить
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                      </TableBody>
+                    </Table>
+                    {filesInFolder.length === 0 && (
+                      <div className="p-4 text-center text-[#888]">Нет файлов в папке.</div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </>
     );
   }
 
@@ -51,52 +216,280 @@ const FilesPage = () => {
           {error && (
             <div className="mb-4 text-red-400">{error}</div>
           )}
+          {/* Кнопка создания папки */}
+          <div className="flex justify-end mb-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="flex items-center gap-2"
+              onClick={() => setCreateFolderModal(true)}
+            >
+              <img src={folderIcon} alt="Папка" className="w-5 h-5" />
+              Создать папку
+            </Button>
+          </div>
           <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-16">№</TableHead>
-                  <TableHead>Active</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead className="w-24"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {files.map((file) => (
-                  <TableRow key={file.name}>
-                    <TableCell className="font-mono text-sm text-[#bbb]">
-                      {file.displayId}
-                    </TableCell>
-                    <TableCell>
-                      <Checkbox
-                        checked={!!file.active}
-                        onCheckedChange={async (checked) => {
-                          await toggleStatus(file.name, !!checked);
-                          toast.success("Статус обновлён!");
-                        }}
-                        aria-label={file.active ? "Деактивировать" : "Активировать"}
-                      />
-                    </TableCell>
-                    <TableCell className="font-medium">{file.name}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => setDeleteModal({ open: true, fileName: file.name })}
-                      >
-                        Удалить
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            {files.length === 0 && (
-              <div className="p-6 text-center text-[#bbb]">Нет данных.</div>
-            )}
+            {/* Древовидное отображение папок и файлов (рекурсивно) */}
+            <div className="space-y-2">
+              <FolderTree
+                parentId={null}
+                folders={folders}
+                files={files}
+                expandedFolders={expandedFolders}
+                setExpandedFolders={setExpandedFolders}
+                toggleStatus={toggleStatus}
+                setDeleteModal={setDeleteModal}
+              />
+              {/* Файлы без папки */}
+              <div className="bg-[#232323] rounded-lg border border-[#313131]">
+                <div className="flex items-center gap-2 px-4 py-2 select-none">
+                  <span className="font-semibold text-[#e0e0e0]">Без папки</span>
+                  {/* Массовые действия для файлов без папки */}
+                  <div className="flex gap-1 ml-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs px-2 py-1"
+                      onClick={async () => {
+                        const filesNoFolder = files.filter(f => !f.folder_id);
+                        await Promise.all(filesNoFolder.map(f => f.active ? null : toggleStatus(f.name, true)));
+                        toast.success("Все файлы без папки активированы");
+                      }}
+                      disabled={files.filter(f => !f.folder_id).length === 0 || files.filter(f => !f.folder_id).every(f => f.active)}
+                    >
+                      Активировать все
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs px-2 py-1"
+                      onClick={async () => {
+                        const filesNoFolder = files.filter(f => !f.folder_id);
+                        await Promise.all(filesNoFolder.map(f => !f.active ? null : toggleStatus(f.name, false)));
+                        toast.success("Все файлы без папки деактивированы");
+                      }}
+                      disabled={files.filter(f => !f.folder_id).length === 0 || files.filter(f => !f.folder_id).every(f => !f.active)}
+                    >
+                      Деактивировать все
+                    </Button>
+                  </div>
+                </div>
+                <div className="overflow-x-auto">
+                  <Table className="min-w-[600px]">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-16 sticky left-0 bg-[#232323] z-10">№</TableHead>
+                        <TableHead className="w-24">Active</TableHead>
+                        <TableHead className="max-w-[240px] min-w-[120px] break-words whitespace-pre-line">Name</TableHead>
+                        <TableHead className="w-24 sticky right-0 bg-[#232323] z-10"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {files
+                        .filter(file => !file.folder_id)
+                        .sort((a, b) => a.name.localeCompare(b.name, 'ru', { sensitivity: 'base' }))
+                        .map((file, idx) => (
+                          <TableRow key={file.name}>
+                            <TableCell className="font-mono text-sm text-[#bbb] sticky left-0 bg-[#232323] z-10">{idx + 1}</TableCell>
+                            <TableCell>
+                              <Checkbox
+                                checked={!!file.active}
+                                onCheckedChange={async (checked) => {
+                                  await toggleStatus(file.name, !!checked);
+                                  toast.success("Статус обновлён!");
+                                }}
+                                aria-label={file.active ? "Деактивировать" : "Активировать"}
+                              />
+                            </TableCell>
+                            <TableCell className="font-medium max-w-[240px] min-w-[120px] break-words whitespace-pre-line" style={{wordBreak: 'break-word', whiteSpace: 'pre-line'}}>
+                              {file.name.length > 40
+                                ? file.name.replace(/(.{40})/g, '$1\n')
+                                : file.name}
+                            </TableCell>
+                            <TableCell className="sticky right-0 bg-[#232323] z-10">
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => setDeleteModal({ open: true, fileName: file.name })}
+                              >
+                                Удалить
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                  {files.filter(file => !file.folder_id).length === 0 && (
+                    <div className="p-4 text-center text-[#888]">Нет файлов вне папок.</div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+      {/* Модальное окно создания папки */}
+      {createFolderModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-[#262626] rounded-lg p-6 shadow-lg w-full max-w-xs flex flex-col items-center border border-[#313131]">
+            <div className="mb-4 text-lg flex items-center gap-2">
+              <img src={folderIcon} alt="Папка" className="w-6 h-6" />
+              Создать новую папку
+            </div>
+            <form
+              className="w-full flex flex-col gap-4"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!newFolderName.trim()) return;
+                setCreatingFolder(true);
+                try {
+                  await createFolder(newFolderName.trim(), newFolderParent);
+                  setCreateFolderModal(false);
+                  setNewFolderName("");
+                  setNewFolderParent(null);
+                  await refetchFolders();
+                  toast.success("Папка создана");
+                } catch (e: any) {
+                  toast.error(e.message || "Ошибка создания папки");
+                } finally {
+                  setCreatingFolder(false);
+                }
+              }}
+            >
+              <input
+                className="w-full rounded bg-[#191919] border border-[#444] px-3 py-2 text-[#eee] focus:outline-none focus:ring focus:ring-[#444]"
+                placeholder="Название папки"
+                value={newFolderName}
+                onChange={e => setNewFolderName(e.target.value)}
+                maxLength={64}
+                required
+                autoFocus
+              />
+              <select
+                className="w-full rounded bg-[#191919] border border-[#444] px-3 py-2 text-[#eee] focus:outline-none"
+                value={newFolderParent ?? ''}
+                onChange={e => setNewFolderParent(e.target.value ? Number(e.target.value) : null)}
+              >
+                <option value="">Корень</option>
+                {folders
+                  .sort((a, b) => a.name.localeCompare(b.name, 'ru', { sensitivity: 'base' }))
+                  .map(folder => (
+                    <option key={folder.id} value={folder.id}>{folder.name}</option>
+                  ))}
+              </select>
+              <div className="flex gap-4 mt-2 w-full justify-end">
+                <Button
+                  variant="secondary"
+                  type="button"
+                  onClick={() => {
+                    setCreateFolderModal(false);
+                    setNewFolderName("");
+                    setNewFolderParent(null);
+                  }}
+                  disabled={creatingFolder}
+                >
+                  Отмена
+                </Button>
+                <Button
+                  variant="default"
+                  type="submit"
+                  disabled={creatingFolder || !newFolderName.trim()}
+                >
+                  {creatingFolder ? "Создание..." : "Создать"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Модальное окно переименования папки */}
+      {renameModal.open && renameModal.folder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-[#262626] rounded-lg p-6 shadow-lg w-full max-w-xs flex flex-col items-center border border-[#313131]">
+            <div className="mb-4 text-lg flex items-center gap-2">
+              <img src={folderIcon} alt="Папка" className="w-6 h-6" />
+              Переименовать папку
+            </div>
+            <form
+              className="w-full flex flex-col gap-4"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!renameValue.trim()) return;
+                try {
+                  await renameFolder(renameModal.folder.id, renameValue.trim());
+                  setRenameModal({ open: false, folder: null });
+                  setRenameValue("");
+                  await refetchFolders();
+                  toast.success("Папка переименована");
+                } catch (e: any) {
+                  toast.error(e.message || "Ошибка переименования папки");
+                }
+              }}
+            >
+              <input
+                className="w-full rounded bg-[#191919] border border-[#444] px-3 py-2 text-[#eee] focus:outline-none focus:ring focus:ring-[#444]"
+                placeholder="Новое имя папки"
+                value={renameValue}
+                onChange={e => setRenameValue(e.target.value)}
+                maxLength={64}
+                required
+                autoFocus
+              />
+              <div className="flex gap-4 mt-2 w-full justify-end">
+                <Button
+                  variant="secondary"
+                  type="button"
+                  onClick={() => setRenameModal({ open: false, folder: null })}
+                >
+                  Отмена
+                </Button>
+                <Button
+                  variant="default"
+                  type="submit"
+                  disabled={!renameValue.trim()}
+                >
+                  Переименовать
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Модальное окно удаления папки */}
+      {deleteModalFolder.open && deleteModalFolder.folder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-[#262626] rounded-lg p-6 shadow-lg w-full max-w-xs flex flex-col items-center border border-[#313131]">
+            <div className="mb-4 text-lg flex items-center gap-2">
+              <img src={folderIcon} alt="Папка" className="w-6 h-6" />
+              Удалить папку
+            </div>
+            <div className="mb-4 text-center">Вы уверены, что хотите удалить папку <span className="font-bold">{deleteModalFolder.folder.name}</span> и все вложенные папки и файлы?</div>
+            <div className="flex gap-4 mt-2 w-full justify-end">
+              <Button
+                variant="secondary"
+                onClick={() => setDeleteModalFolder({ open: false, folder: null })}
+              >
+                Отмена
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={async () => {
+                  try {
+                    await deleteFolder(deleteModalFolder.folder!.id);
+                    setDeleteModalFolder({ open: false, folder: null });
+                    await refetchFolders();
+                    toast.success("Папка удалена");
+                  } catch (e: any) {
+                    toast.error(e.message || "Ошибка удаления папки");
+                  }
+                }}
+              >
+                Удалить
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Модальное окно подтверждения удаления */}
       {deleteModal.open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">

@@ -5,6 +5,15 @@ export type FileRow = {
   name: string;
   active: boolean;
   displayId?: number; // Для визуального отображения в таблице
+  folder_id?: number | null;
+};
+
+export type FolderRow = {
+  id: number;
+  username: string;
+  name: string;
+  parent_id: number | null;
+  created_at: string;
 };
 
 export function useFiles() {
@@ -51,11 +60,17 @@ export function useFiles() {
         console.log("Полученные данные:", data);
         
         // Добавляем displayId для визуального отображения
-        const filesWithDisplayId = (data.rows || []).map((file: FileRow, index: number) => ({
+        let filesWithDisplayId = (data.rows || []).map((file: FileRow, index: number) => ({
           ...file,
           displayId: index + 1
         }));
-        
+        // Сортировка: сначала активные, затем неактивные, внутри групп — по алфавиту
+        filesWithDisplayId = filesWithDisplayId.sort((a, b) => {
+          if (a.active === b.active) {
+            return a.name.localeCompare(b.name, 'ru', { sensitivity: 'base' });
+          }
+          return a.active ? -1 : 1;
+        });
         setFiles(filesWithDisplayId);
       })
       .catch((e) => {
@@ -110,4 +125,85 @@ export function useFiles() {
   }
 
   return { files, isLoading, error, toggleStatus, deleteFile };
+}
+
+export function useFolders() {
+  const { telegramUsername } = useAuth();
+  const [folders, setFolders] = useState<FolderRow[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Для refetch без перезагрузки
+  const refetchFolders = async () => {
+    setIsLoading(true);
+    setError(null);
+    if (!telegramUsername) {
+      setFolders([]);
+      setIsLoading(false);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/folders/${telegramUsername}`);
+      if (!res.ok) throw new Error('Ошибка загрузки папок');
+      const data = await res.json();
+      setFolders(data.rows || []);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    refetchFolders();
+    // eslint-disable-next-line
+  }, [telegramUsername]);
+
+  // Создание папки
+  async function createFolder(name: string, parent_id: number | null) {
+    if (!telegramUsername) throw new Error('Нет username');
+    const res = await fetch(`/api/folders/${telegramUsername}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, parent_id }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || 'Ошибка создания папки');
+    }
+    await refetchFolders();
+  }
+
+  // Удаление папки
+  async function deleteFolder(folderId: number) {
+    if (!telegramUsername) throw new Error('Нет username');
+    const res = await fetch(`/api/folders/${telegramUsername}/${folderId}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || 'Ошибка удаления папки');
+    }
+    await refetchFolders();
+  }
+
+  // Переименование/перемещение папки
+  async function renameFolder(folderId: number, newName: string | null, parent_id?: number | null) {
+    if (!telegramUsername) throw new Error('Нет username');
+    const body: any = {};
+    if (newName !== null) body.name = newName;
+    if (typeof parent_id !== 'undefined') body.parent_id = parent_id;
+    const res = await fetch(`/api/folders/${telegramUsername}/${folderId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || 'Ошибка переименования/перемещения папки');
+    }
+    await refetchFolders();
+  }
+
+  return { folders, isLoading, error, refetchFolders, createFolder, deleteFolder, renameFolder };
 }

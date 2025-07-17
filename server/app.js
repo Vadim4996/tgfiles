@@ -115,11 +115,11 @@ app.post("/api/vector-collections/:username/toggle", async (req, res) => {
   console.log(`Обновление статуса строки с name='${name}' в таблице ${table} на ${active}`);
   
   try {
-    await pool.query(
+  await pool.query(
       `UPDATE ${table} SET active = $1 WHERE name = $2`,
       [!!active, name]
-    );
-    res.json({ success: true });
+  );
+  res.json({ success: true });
   } catch (e) {
     console.error(`Ошибка при обновлении строки в таблице ${table}:`, e);
     res.status(500).json({ error: "Ошибка обновления", details: e.message });
