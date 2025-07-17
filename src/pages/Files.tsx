@@ -263,8 +263,7 @@ const FilesPage = () => {
                         <TableHead className="w-16 sticky left-0 bg-[#232323] z-10">№</TableHead>
                         <TableHead className="w-24">Active</TableHead>
                         <TableHead className="max-w-[240px] min-w-[120px] break-words whitespace-pre-line">Name</TableHead>
-                        <TableHead className="w-40">Переместить</TableHead>
-                        <TableHead className="w-24 sticky right-0 bg-[#232323] z-10"></TableHead>
+                        <TableHead className="w-16 sticky right-0 bg-[#232323] z-10"></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -304,45 +303,14 @@ const FilesPage = () => {
                                 ? file.name.replace(/(.{40})/g, '$1\n')
                                 : file.name}
                             </TableCell>
-                            <TableCell>
-                              <select
-                                className="rounded bg-[#191919] border border-[#444] px-2 py-1 text-[#eee]"
-                                value={''}
-                                onChange={async (e) => {
-                                  const folderId = Number(e.target.value);
-                                  if (!folderId) return;
-                                  try {
-                                    // PATCH запрос для перемещения файла
-                                    const res = await fetch(`/api/vector-collections/${telegramUsername}/move`, {
-                                      method: 'PATCH',
-                                      headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify({ name: file.name, folder_id: folderId }),
-                                    });
-                                    if (!res.ok) throw new Error('Ошибка перемещения файла');
-                                    toast.success('Файл перемещён');
-                                    // Обновить список файлов
-                                    window.location.reload(); // или refetch, если реализовано
-                                  } catch (e: any) {
-                                    toast.error(e.message || 'Ошибка перемещения файла');
-                                  }
-                                }}
-                              >
-                                <option value="">В папку...</option>
-                                {folders
-                                  .sort((a, b) => a.name.localeCompare(b.name, 'ru', { sensitivity: 'base' }))
-                                  .map(folder => (
-                                    <option key={folder.id} value={folder.id}>{folder.name}</option>
-                                  ))}
-                              </select>
-                            </TableCell>
                             <TableCell className="sticky right-0 bg-[#232323] z-10">
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => setDeleteModal({ open: true, fileName: file.name })}
+                              <button
+                                className="p-1 rounded hover:bg-[#333]"
+                                onClick={e => setFileMenu({ open: true, file, anchor: e.currentTarget })}
+                                aria-label="Меню файла"
                               >
-                                Удалить
-                              </Button>
+                                <img src={gearIcon} alt="Меню" className="w-5 h-5" />
+                              </button>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -615,8 +583,8 @@ const FilesPage = () => {
               className="w-full rounded bg-[#191919] border border-[#444] px-3 py-2 text-[#eee] focus:outline-none"
               value={''}
               onChange={async (e) => {
-                const folderId = Number(e.target.value);
-                if (!folderId) return;
+                const folderId = e.target.value === 'null' ? null : Number(e.target.value);
+                if (e.target.value === '') return;
                 try {
                   const res = await fetch(`/api/vector-collections/${telegramUsername}/move`, {
                     method: 'PATCH',
@@ -633,6 +601,7 @@ const FilesPage = () => {
               }}
             >
               <option value="">В папку...</option>
+              <option value="null">В категорию Без папки</option>
               {folders
                 .sort((a, b) => a.name.localeCompare(b.name, 'ru', { sensitivity: 'base' }))
                 .map(folder => (
