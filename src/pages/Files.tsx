@@ -84,15 +84,17 @@ const FilesPage = () => {
                 <img src={folderIcon} alt="Папка" className="w-5 h-5" />
                 <span className="font-semibold text-[#e0e0e0]">{folder.name}</span>
                 <span className="ml-auto flex items-center gap-2">
-                  <Checkbox
-                    checked={allActive}
-                    onCheckedChange={async (checked) => {
-                      await Promise.all(filesInFolder.map(f => f.active === checked ? null : toggleStatus(f.name, checked)));
-                      toast.success(checked ? "Все файлы в папке активированы" : "Все файлы в папке деактивированы");
-                    }}
-                    aria-label={allActive ? "Деактивировать все" : "Активировать все"}
-                    disabled={filesInFolder.length === 0}
-                  />
+                  <span onClick={e => e.stopPropagation()} className="flex items-center">
+                    <Checkbox
+                      checked={allActive}
+                      onCheckedChange={async (checked) => {
+                        await Promise.all(filesInFolder.map(f => f.active === checked ? null : toggleStatus(f.name, checked)));
+                        toast.success(checked ? "Все файлы в папке активированы" : "Все файлы в папке деактивированы");
+                      }}
+                      aria-label={allActive ? "Деактивировать все" : "Активировать все"}
+                      disabled={filesInFolder.length === 0}
+                    />
+                  </span>
                 </span>
                 <Button
                   variant="secondary"
@@ -138,7 +140,7 @@ const FilesPage = () => {
                         {filesInFolder
                           .sort((a, b) => a.name.localeCompare(b.name, 'ru', { sensitivity: 'base' }))
                           .map((file, idx) => (
-                            <TableRow key={file.name}>
+                            <TableRow key={file.name} draggable onDragStart={e => e.dataTransfer.setData('text/plain', file.name)}>
                               <TableCell className="font-mono text-sm text-[#bbb] sticky left-0 bg-[#232323] z-10">{idx + 1}</TableCell>
                               <TableCell>
                                 <Checkbox
