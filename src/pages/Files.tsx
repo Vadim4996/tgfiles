@@ -93,9 +93,6 @@ const FilesPage = () => {
                     aria-label={allActive ? "Деактивировать все" : "Активировать все"}
                     disabled={filesInFolder.length === 0}
                   />
-                  <span className={allActive ? 'text-green-400 font-semibold' : 'text-red-400 font-semibold'}>
-                    {allActive ? 'Активно' : 'Не активно'}
-                  </span>
                 </span>
                 <Button
                   variant="secondary"

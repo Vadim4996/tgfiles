@@ -251,6 +251,31 @@ app.patch("/api/folders/:username/:folderId", async (req, res) => {
   }
 });
 
+// Переместить файл в папку (или в 'Без папки')
+app.patch("/api/vector-collections/:username/move", async (req, res) => {
+  const { username } = req.params;
+  const { name, folder_id } = req.body;
+  const table = `${username}_vector_collections`;
+  try {
+    // Проверка, существует ли файл
+    const exists = await pool.query(
+      `SELECT 1 FROM ${table} WHERE name = $1`,
+      [name]
+    );
+    if (exists.rows.length === 0) {
+      return res.status(404).json({ error: "Файл не найден" });
+    }
+    await pool.query(
+      `UPDATE ${table} SET folder_id = $1 WHERE name = $2`,
+      [folder_id, name]
+    );
+    res.json({ success: true });
+  } catch (e) {
+    console.error("Ошибка при перемещении файла:", e);
+    res.status(500).json({ error: "Ошибка перемещения файла", details: e.message });
+  }
+});
+
 // Добавьте здесь другие эндпоинты/Webhook для Telegram!
 
 const PORT = process.env.PORT || 3001;
