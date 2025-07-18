@@ -63,6 +63,8 @@ const WikiPage = () => {
     setEditMode(false);
     setEditTitle(note.title);
     setEditContent(note.content || "");
+    fetchAttachments(note.note_id);
+    fetchLabels(note.note_id);
   }
 
   async function handleCreate(parentId = null) {
@@ -87,7 +89,12 @@ const WikiPage = () => {
     });
     if (res.ok) {
       toast.success("Заметка создана");
-      fetchNotes();
+      await fetchNotes();
+      // После создания сразу выбираем новую заметку и обновляем вложения
+      const data = await res.json();
+      if (data.note) {
+        handleSelect(data.note);
+      }
     } else {
       toast.error("Ошибка создания заметки");
     }
@@ -100,6 +107,8 @@ const WikiPage = () => {
       toast.success("Заметка удалена");
       setSelected(null);
       fetchNotes();
+      setAttachments([]);
+      setLabels([]);
     } else {
       toast.error("Ошибка удаления заметки");
     }
@@ -117,6 +126,7 @@ const WikiPage = () => {
       await fetchNotes();
       setSelected({ ...selected, title: editTitle, content: editContent });
       setEditMode(false);
+      fetchAttachments(selected.note_id);
     } else {
       toast.error("Ошибка сохранения");
     }
@@ -167,14 +177,14 @@ const WikiPage = () => {
     const res = await fetch(`/api/blobs`, { method: "POST", body: formData });
     if (res.ok) {
       toast.success("Вложение загружено");
-      fetchAttachments(selected.note_id);
+      await fetchAttachments(selected.note_id);
     } else {
       toast.error("Ошибка загрузки вложения");
     }
   }
   async function handleDeleteAttachment(id) {
     await fetch(`/api/blobs/${id}`, { method: "DELETE" });
-    fetchAttachments(selected.note_id);
+    await fetchAttachments(selected.note_id);
   }
 
   // --- Метки ---
@@ -199,11 +209,11 @@ const WikiPage = () => {
   }
 
   useEffect(() => {
-    if (selected) {
+    if (selected && selected.note_id) {
       fetchAttachments(selected.note_id);
       fetchLabels(selected.note_id);
     }
-  }, [selected]);
+  }, [selected?.note_id]);
 
   // --- Контекстное меню ---
   function NoteContextMenu({ note, children }) {
