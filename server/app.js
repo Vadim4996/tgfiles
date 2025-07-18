@@ -450,14 +450,18 @@ app.delete('/api/attribute/:id', async (req, res) => {
 const multer = require('multer');
 const upload = multer();
 // Загрузить blob
-app.post('/api/blobs', upload.single('file'), async (req, res) => {
-  const file = req.file;
-  if (!file) return res.status(400).json({ error: 'Нет файла' });
+app.post('/api/blobs', upload.fields([{ name: 'file' }, { name: 'note_id' }]), async (req, res) => {
+  console.log('=== POST /api/blobs ===');
+  console.log('req.body:', req.body);
+  console.log('req.files:', req.files);
+  const file = req.files?.file?.[0];
+  const note_id = req.body.note_id;
+  if (!file || !note_id) return res.status(400).json({ error: 'Нет файла или note_id' });
   const id = uuidv4();
   try {
     await pool.query(
-      `INSERT INTO blobs (id, data, mime, size, filename) VALUES ($1,$2,$3,$4,$5)`,
-      [id, file.buffer, file.mimetype, file.size, file.originalname]
+      `INSERT INTO blobs (id, note_id, data, mime, size, filename) VALUES ($1,$2,$3,$4,$5,$6)`,
+      [id, note_id, file.buffer, file.mimetype, file.size, file.originalname]
     );
     res.json({ id });
   } catch (e) {
