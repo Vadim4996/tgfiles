@@ -12,6 +12,16 @@ import folderIcon from '/folder.png';
 import { useRef } from "react";
 import gearIcon from '/gear.png';
 
+function getGearMenuPosition(anchor: HTMLElement | null) {
+  if (!anchor) return { left: 0, top: 0 };
+  const rect = anchor.getBoundingClientRect();
+  return {
+    left: rect.left + window.scrollX,
+    top: rect.bottom + window.scrollY,
+    transform: 'translateX(-100%)',
+  };
+}
+
 const FilesPage = () => {
   const { telegramUsername, photoUrl } = useAuth();
   const { files, toggleStatus, deleteFile, isLoading, error } = useFiles();
@@ -522,7 +532,7 @@ const FilesPage = () => {
         >
           <div
             className="absolute bg-[#232323] border border-[#444] rounded shadow-lg p-2 min-w-[120px]"
-            style={{ left: fileMenu.anchor?.getBoundingClientRect().left ?? 0, top: (fileMenu.anchor?.getBoundingClientRect().bottom ?? 0) + window.scrollY }}
+            style={getGearMenuPosition(fileMenu.anchor)}
             onClick={e => e.stopPropagation()}
           >
             <button
@@ -549,10 +559,7 @@ const FilesPage = () => {
         >
           <div
             className="absolute bg-[#232323] border border-[#444] rounded shadow-lg p-2 min-w-[120px]"
-            style={{
-              left: (folderMenu.anchor?.getBoundingClientRect().left ?? 0) - 120 + window.scrollX,
-              top: (folderMenu.anchor?.getBoundingClientRect().bottom ?? 0) + window.scrollY
-            }}
+            style={getGearMenuPosition(folderMenu.anchor)}
             onClick={e => e.stopPropagation()}
           >
             <button
