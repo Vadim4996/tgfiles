@@ -215,6 +215,10 @@ const WikiPage = () => {
     }
   }, [selected?.note_id]);
 
+  useEffect(() => {
+    console.log('attachments:', attachments);
+  }, [attachments]);
+
   // --- Контекстное меню ---
   function NoteContextMenu({ note, children }) {
     return (
