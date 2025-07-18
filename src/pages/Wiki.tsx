@@ -114,8 +114,9 @@ const WikiPage = () => {
     });
     if (res.ok) {
       toast.success("Сохранено");
+      await fetchNotes();
+      setSelected({ ...selected, title: editTitle, content: editContent });
       setEditMode(false);
-      fetchNotes();
     } else {
       toast.error("Ошибка сохранения");
     }
@@ -162,7 +163,7 @@ const WikiPage = () => {
     if (!file || !selected) return;
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("note_id", selected.note_id);
+    formData.append("note_id", selected.note_id); // обязательно!
     const res = await fetch(`/api/blobs`, { method: "POST", body: formData });
     if (res.ok) {
       toast.success("Вложение загружено");
