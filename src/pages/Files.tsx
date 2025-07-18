@@ -11,6 +11,9 @@ import { ArrowLeft } from "lucide-react";
 import folderIcon from '/folder.png';
 import { useRef } from "react";
 import gearIcon from '/gear.png';
+import { Maximize } from "lucide-react";
+import { useEffect } from "react";
+import { expandViewport, requestFullscreen, isFullscreen } from "@telegram-apps/sdk";
 
 function getGearMenuPosition(anchor: HTMLElement | null) {
   if (!anchor) return { left: 0, top: 0 };
@@ -42,6 +45,17 @@ const FilesPage = () => {
   const [fileMenu, setFileMenu] = useState<{ open: boolean; file: FileRow | null; anchor: HTMLElement | null }>({ open: false, file: null, anchor: null });
   const [folderMenu, setFolderMenu] = useState<{ open: boolean; folder: FolderRow | null; anchor: HTMLElement | null }>({ open: false, folder: null, anchor: null });
   const [moveFile, setMoveFile] = useState<FileRow | null>(null);
+  const [fullscreenAvailable, setFullscreenAvailable] = useState(false);
+
+  useEffect(() => {
+    if (requestFullscreen.isAvailable()) {
+      setFullscreenAvailable(true);
+    }
+    // Можно сразу расширить viewport, если доступно
+    if (expandViewport.isAvailable()) {
+      expandViewport();
+    }
+  }, []);
 
   if (!telegramUsername) {
     return (
@@ -208,6 +222,22 @@ const FilesPage = () => {
             <AvatarFallback>{telegramUsername[0]?.toUpperCase() || "U"}</AvatarFallback>
           )}
         </Avatar>
+        {/* Кнопка полноэкранного режима */}
+        {fullscreenAvailable && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full hover:bg-[#313131]"
+            aria-label="На весь экран"
+            onClick={async () => {
+              if (requestFullscreen.isAvailable()) {
+                await requestFullscreen();
+              }
+            }}
+          >
+            <Maximize size={22} />
+          </Button>
+        )}
         <h1 className="text-2xl font-bold tracking-tight">Моя коллекция</h1>
       </div>
       {/* Карточка коллекции */}
