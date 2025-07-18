@@ -496,6 +496,21 @@ app.delete('/api/blobs/:id', async (req, res) => {
   }
 });
 
+// Получить вложения для заметки
+app.get('/api/blobs', async (req, res) => {
+  const { note_id } = req.query;
+  if (!note_id) return res.json({ rows: [] });
+  try {
+    const result = await pool.query(
+      `SELECT * FROM blobs WHERE note_id = $1 ORDER BY created_at ASC`,
+      [note_id]
+    );
+    res.json({ rows: result.rows });
+  } catch (e) {
+    res.status(500).json({ error: 'Ошибка получения вложений', details: e.message });
+  }
+});
+
 // Добавьте здесь другие эндпоинты/Webhook для Telegram!
 
 const PORT = process.env.PORT || 3001;
