@@ -3,6 +3,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 const pool = require("./db.cjs");
+const { v4: uuidv4 } = require('uuid');
 
 const JWT_SECRET = process.env.JWT_SECRET || "verysecretkey"; // Смените в бою!
 const app = express();
@@ -273,6 +274,221 @@ app.patch("/api/vector-collections/:username/move", async (req, res) => {
   } catch (e) {
     console.error("Ошибка при перемещении файла:", e);
     res.status(500).json({ error: "Ошибка перемещения файла", details: e.message });
+  }
+});
+
+// --- CRUD для заметок (notes) ---
+// Получить дерево заметок пользователя
+app.get('/api/notes/:username', async (req, res) => {
+  const { username } = req.params;
+  try {
+    const result = await pool.query(
+      `SELECT * FROM notes WHERE username = $1 AND is_deleted = FALSE ORDER BY note_position ASC, date_created ASC`,
+      [username]
+    );
+    res.json({ rows: result.rows });
+  } catch (e) {
+    console.error('Ошибка при получении заметок:', e);
+    res.status(500).json({ error: 'Ошибка получения заметок', details: e.message });
+  }
+});
+
+// Получить одну заметку по note_id
+app.get('/api/note/:noteId', async (req, res) => {
+  const { noteId } = req.params;
+  try {
+    const result = await pool.query(
+      `SELECT * FROM notes WHERE note_id = $1`,
+      [noteId]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Заметка не найдена' });
+    res.json({ note: result.rows[0] });
+  } catch (e) {
+    console.error('Ошибка при получении заметки:', e);
+    res.status(500).json({ error: 'Ошибка получения заметки', details: e.message });
+  }
+});
+
+// Создать новую заметку
+app.post('/api/notes', async (req, res) => {
+  const {
+    username, parent_note_id, title, content, type, mime, is_protected, is_expanded, note_position, prefix, attributes
+  } = req.body;
+  try {
+    const note_id = uuidv4();
+    const now = new Date();
+    const result = await pool.query(
+      `INSERT INTO notes (note_id, username, parent_note_id, title, content, type, mime, is_protected, is_expanded, note_position, prefix, date_created, utc_date_created, date_modified, utc_date_modified, attributes)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING *`,
+      [note_id, username, parent_note_id, title, content, type, mime, is_protected, is_expanded, note_position, prefix, now, now, now, now, attributes || {}]
+    );
+    res.json({ note: result.rows[0] });
+  } catch (e) {
+    console.error('Ошибка при создании заметки:', e);
+    res.status(500).json({ error: 'Ошибка создания заметки', details: e.message });
+  }
+});
+
+// Обновить заметку
+app.patch('/api/note/:noteId', async (req, res) => {
+  const { noteId } = req.params;
+  const fields = req.body;
+  const allowed = [
+    'parent_note_id','title','content','type','mime','is_protected','is_expanded','note_position','prefix','attributes','is_deleted','delete_id','blob_id','date_modified','utc_date_modified'
+  ];
+  const set = [];
+  const values = [];
+  let idx = 1;
+  for (const key of allowed) {
+    if (fields[key] !== undefined) {
+      set.push(`${key} = $${idx}`);
+      values.push(fields[key]);
+      idx++;
+    }
+  }
+  if (set.length === 0) return res.status(400).json({ error: 'Нет данных для обновления' });
+  values.push(noteId);
+  try {
+    const result = await pool.query(
+      `UPDATE notes SET ${set.join(', ')}, date_modified = NOW(), utc_date_modified = NOW() WHERE note_id = $${values.length} RETURNING *`,
+      values
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Заметка не найдена' });
+    res.json({ note: result.rows[0] });
+  } catch (e) {
+    console.error('Ошибка при обновлении заметки:', e);
+    res.status(500).json({ error: 'Ошибка обновления заметки', details: e.message });
+  }
+});
+
+// Удалить заметку (soft delete)
+app.delete('/api/note/:noteId', async (req, res) => {
+  const { noteId } = req.params;
+  try {
+    await pool.query(
+      `UPDATE notes SET is_deleted = TRUE, delete_id = $1 WHERE note_id = $2`,
+      [uuidv4(), noteId]
+    );
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Ошибка при удалении заметки:', e);
+    res.status(500).json({ error: 'Ошибка удаления заметки', details: e.message });
+  }
+});
+
+// --- CRUD для атрибутов ---
+// Получить все атрибуты заметки
+app.get('/api/attributes/:noteId', async (req, res) => {
+  const { noteId } = req.params;
+  try {
+    const result = await pool.query(
+      `SELECT * FROM attributes WHERE note_id = $1`,
+      [noteId]
+    );
+    res.json({ rows: result.rows });
+  } catch (e) {
+    console.error('Ошибка при получении атрибутов:', e);
+    res.status(500).json({ error: 'Ошибка получения атрибутов', details: e.message });
+  }
+});
+// Добавить атрибут
+app.post('/api/attributes', async (req, res) => {
+  const { note_id, type, name, value, position, is_inheritable } = req.body;
+  try {
+    const result = await pool.query(
+      `INSERT INTO attributes (note_id, type, name, value, position, is_inheritable) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+      [note_id, type, name, value, position, is_inheritable]
+    );
+    res.json({ attribute: result.rows[0] });
+  } catch (e) {
+    console.error('Ошибка при добавлении атрибута:', e);
+    res.status(500).json({ error: 'Ошибка добавления атрибута', details: e.message });
+  }
+});
+// Обновить атрибут
+app.patch('/api/attribute/:id', async (req, res) => {
+  const { id } = req.params;
+  const fields = req.body;
+  const allowed = ['type','name','value','position','is_inheritable'];
+  const set = [];
+  const values = [];
+  let idx = 1;
+  for (const key of allowed) {
+    if (fields[key] !== undefined) {
+      set.push(`${key} = $${idx}`);
+      values.push(fields[key]);
+      idx++;
+    }
+  }
+  if (set.length === 0) return res.status(400).json({ error: 'Нет данных для обновления' });
+  values.push(id);
+  try {
+    const result = await pool.query(
+      `UPDATE attributes SET ${set.join(', ')} WHERE id = $${values.length} RETURNING *`,
+      values
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Атрибут не найден' });
+    res.json({ attribute: result.rows[0] });
+  } catch (e) {
+    console.error('Ошибка при обновлении атрибута:', e);
+    res.status(500).json({ error: 'Ошибка обновления атрибута', details: e.message });
+  }
+});
+// Удалить атрибут
+app.delete('/api/attribute/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query(`DELETE FROM attributes WHERE id = $1`, [id]);
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Ошибка при удалении атрибута:', e);
+    res.status(500).json({ error: 'Ошибка удаления атрибута', details: e.message });
+  }
+});
+
+// --- CRUD для blobs (вложений) ---
+const multer = require('multer');
+const upload = multer();
+// Загрузить blob
+app.post('/api/blobs', upload.single('file'), async (req, res) => {
+  const file = req.file;
+  if (!file) return res.status(400).json({ error: 'Нет файла' });
+  const id = uuidv4();
+  try {
+    await pool.query(
+      `INSERT INTO blobs (id, data, mime, size, filename) VALUES ($1,$2,$3,$4,$5)`,
+      [id, file.buffer, file.mimetype, file.size, file.originalname]
+    );
+    res.json({ id });
+  } catch (e) {
+    console.error('Ошибка при загрузке blob:', e);
+    res.status(500).json({ error: 'Ошибка загрузки blob', details: e.message });
+  }
+});
+// Получить blob
+app.get('/api/blobs/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query(`SELECT * FROM blobs WHERE id = $1`, [id]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Blob не найден' });
+    const blob = result.rows[0];
+    res.setHeader('Content-Type', blob.mime || 'application/octet-stream');
+    res.setHeader('Content-Disposition', `attachment; filename="${blob.filename || id}"`);
+    res.send(blob.data);
+  } catch (e) {
+    console.error('Ошибка при получении blob:', e);
+    res.status(500).json({ error: 'Ошибка получения blob', details: e.message });
+  }
+});
+// Удалить blob
+app.delete('/api/blobs/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query(`DELETE FROM blobs WHERE id = $1`, [id]);
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Ошибка при удалении blob:', e);
+    res.status(500).json({ error: 'Ошибка удаления blob', details: e.message });
   }
 });
 
