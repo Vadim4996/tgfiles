@@ -162,24 +162,27 @@ const Wiki: React.FC = () => {
     return roots;
   };
 
+  // Новый endpoint для обновления/перемещения заметки
+  const NOTE_UPDATE_ENDPOINT = '/api/notes/update';
+
   const handleSaveNote = async () => {
     if (!selectedNote || !selectedNote.id) {
       alert('Не выбрана заметка для сохранения!');
       return;
     }
     setIsSaving(true);
+    const formData = new FormData();
+    formData.append('note_id', selectedNote.id);
+    formData.append('title', noteTitle);
+    formData.append('content', noteContent);
+    formData.append('type', 'note');
     try {
-      const response = await fetch(`/api/notes/${selectedNote.id}`, {
-        method: 'PUT',
+      const response = await fetch(NOTE_UPDATE_ENDPOINT, {
+        method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          title: noteTitle,
-          content: noteContent,
-          type: 'note'
-        })
+        body: formData
       });
       if (response.ok) {
         await loadNotes();
@@ -197,25 +200,22 @@ const Wiki: React.FC = () => {
   };
 
   const handleCreateNote = async () => {
+    const formData = new FormData();
+    formData.append('title', 'Новая заметка');
+    formData.append('content', '');
+    formData.append('parent_id', selectedNote?.id || '');
+    formData.append('type', 'note');
     try {
       const response = await fetch('/api/notes', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          title: 'Новая заметка',
-          content: '',
-          parent_id: selectedNote?.id || null,
-          type: 'note'
-        })
+        body: formData
       });
-
       if (response.ok) {
         await loadNotes();
         const data = await response.json();
-        // Используем note_id из ответа backend
         const noteId = data.note.note_id || data.note.id;
         navigate(`/wiki/${noteId}`);
       }
@@ -255,26 +255,25 @@ const Wiki: React.FC = () => {
   };
 
   const handleMoveNote = async (noteId: string, newParentId: string | null) => {
-    // Находим заметку по id
     const allNotes = flattenNotes(notes);
     const note = allNotes.find(n => n.id === noteId);
     if (!note) {
       alert('Заметка не найдена!');
       return;
     }
+    const formData = new FormData();
+    formData.append('note_id', noteId);
+    formData.append('title', note.title || 'Без названия');
+    formData.append('content', note.content || '');
+    formData.append('parent_id', newParentId || '');
+    formData.append('type', note.type || 'note');
     try {
-      const response = await fetch(`/api/notes/${noteId}`, {
-        method: 'PUT',
+      const response = await fetch(NOTE_UPDATE_ENDPOINT, {
+        method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          title: note.title || 'Без названия',
-          content: note.content || '',
-          parent_id: newParentId,
-          type: note.type || 'note'
-        })
+        body: formData
       });
       if (response.ok) {
         await loadNotes();

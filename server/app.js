@@ -10,6 +10,7 @@ const app = express();
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
 
 // Middleware для логирования запросов
 app.use((req, res, next) => {
@@ -451,6 +452,29 @@ app.delete('/api/notes/:noteId', extractUsername, async (req, res) => {
   } catch (e) {
     console.error('Ошибка при удалении заметки:', e);
     res.status(500).json({ error: 'Ошибка удаления заметки', details: e.message });
+  }
+});
+
+// Новый endpoint для обновления заметки через POST + FormData
+app.post('/api/notes/update', extractUsername, async (req, res) => {
+  const note_id = req.body.note_id;
+  const title = req.body.title;
+  const content = req.body.content;
+  const parent_id = req.body.parent_id || null;
+  const type = req.body.type || 'note';
+  if (!note_id || !title) {
+    return res.status(400).json({ error: 'note_id и title обязательны' });
+  }
+  try {
+    const result = await pool.query(
+      `UPDATE notes SET title = $1, content = $2, parent_note_id = $3, type = $4, date_modified = NOW(), utc_date_modified = NOW() WHERE note_id = $5 AND username = $6 RETURNING *`,
+      [title, content, parent_id, type, note_id, req.username]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Заметка не найдена' });
+    res.json({ note: result.rows[0] });
+  } catch (e) {
+    console.error('Ошибка при обновлении заметки:', e);
+    res.status(500).json({ error: 'Ошибка обновления заметки', details: e.message });
   }
 });
 
