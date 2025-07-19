@@ -97,7 +97,7 @@ const Wiki: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         // Маппинг note_id -> id для совместимости с интерфейсом
-        const mappedData = data.map((note: any) => ({
+        const mappedData = (data.rows || []).map((note: any) => ({
           ...note,
           id: note.note_id || note.id
         }));
