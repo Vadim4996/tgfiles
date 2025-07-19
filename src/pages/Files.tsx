@@ -81,7 +81,7 @@ const FilesPage = () => {
           // Статус папки
           const allActive = filesInFolder.length > 0 && filesInFolder.every(f => f.active);
           const anyActive = filesInFolder.some(f => f.active);
-          return (
+  return (
             <div
               key={folder.id}
               className={`bg-[#232323] rounded-lg border border-[#313131] mb-2 ${dragOverFolder === folder.id ? 'ring-2 ring-green-500' : ''}`}
@@ -147,35 +147,35 @@ const FilesPage = () => {
                   {/* Файлы в этой папке */}
                   <div className="overflow-x-auto">
                     <Table className="min-w-[600px]">
-                      <TableHeader>
-                        <TableRow>
+          <TableHeader>
+            <TableRow>
                           <TableHead className="w-16 sticky left-0 bg-[#232323] z-10">№</TableHead>
                           <TableHead className="w-24">Active</TableHead>
                           <TableHead className="max-w-[240px] min-w-[120px] break-words whitespace-pre-line">Name</TableHead>
                           <TableHead className="w-24 sticky right-0 bg-[#232323] z-10"></TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
                         {filesInFolder
                           .sort((a, b) => a.name.localeCompare(b.name, 'ru', { sensitivity: 'base' }))
                           .map((file, idx) => (
                             <TableRow key={file.name} draggable onDragStart={e => e.dataTransfer.setData('text/plain', file.name)}>
                               <TableCell className="font-mono text-sm text-[#bbb] sticky left-0 bg-[#232323] z-10">{idx + 1}</TableCell>
-                              <TableCell>
-                                <Checkbox
+                <TableCell>
+                  <Checkbox
                                   checked={!!file.active}
-                                  onCheckedChange={async (checked) => {
+                    onCheckedChange={async (checked) => {
                                     await toggleStatus(file.name, !!checked);
                                     toast.success("Статус обновлён!");
-                                  }}
+                    }}
                                   aria-label={file.active ? "Деактивировать" : "Активировать"}
-                                />
-                              </TableCell>
+                  />
+                </TableCell>
                               <TableCell className="font-medium max-w-[240px] min-w-[120px] break-words whitespace-pre-line" style={{wordBreak: 'break-word', whiteSpace: 'pre-line'}}>
                                 {file.name.length > 40
                                   ? file.name.replace(/(.{40})/g, '$1\n')
                                   : file.name}
-                              </TableCell>
+                </TableCell>
                               <TableCell className="sticky right-0 bg-[#232323] z-10">
                                 <button
                                   className="p-1 rounded hover:bg-[#333]"
@@ -184,7 +184,7 @@ const FilesPage = () => {
                                 >
                                   <img src={gearIcon} alt="Меню" className="w-5 h-5" />
                                 </button>
-                              </TableCell>
+                </TableCell>
                             </TableRow>
                           ))}
                       </TableBody>
@@ -224,12 +224,12 @@ const FilesPage = () => {
         </Avatar>
         {/* Кнопка полноэкранного режима */}
         {fullscreenAvailable && (
-          <Button
+                  <Button
             variant="ghost"
             size="icon"
             className="rounded-full hover:bg-[#313131]"
             aria-label="На весь экран"
-            onClick={async () => {
+                    onClick={async () => {
               if (requestFullscreen.isAvailable()) {
                 await requestFullscreen();
               }
@@ -256,7 +256,7 @@ const FilesPage = () => {
             >
               <img src={folderIcon} alt="Папка" className="w-5 h-5" />
               Создать папку
-            </Button>
+                  </Button>
           </div>
           <div className="overflow-x-auto">
             {/* Древовидное отображение папок и файлов (рекурсивно) */}
@@ -351,14 +351,14 @@ const FilesPage = () => {
                               >
                                 <img src={gearIcon} alt="Меню" className="w-5 h-5" />
                               </button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
                   {files.filter(file => !file.folder_id).length === 0 && (
                     <div className="p-4 text-center text-[#888]">Нет файлов вне папок.</div>
-                  )}
+        )}
                 </div>
               </div>
             </div>

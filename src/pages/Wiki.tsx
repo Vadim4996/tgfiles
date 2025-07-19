@@ -96,7 +96,12 @@ const Wiki: React.FC = () => {
       });
       if (response.ok) {
         const data = await response.json();
-        const tree = buildNoteTree(data);
+        // Маппинг note_id -> id для совместимости с интерфейсом
+        const mappedData = data.map((note: any) => ({
+          ...note,
+          id: note.note_id || note.id
+        }));
+        const tree = buildNoteTree(mappedData);
         setNotes(tree);
       }
     } catch (error) {
@@ -111,7 +116,8 @@ const Wiki: React.FC = () => {
       });
       if (response.ok) {
         const note = await response.json();
-        setSelectedNote(note);
+        // Маппинг note_id -> id для совместимости с интерфейсом
+        setSelectedNote({ ...note, id: note.note_id || note.id });
         setNoteTitle(note.title);
         setNoteContent(note.content);
         loadAttachments(id);
@@ -203,7 +209,9 @@ const Wiki: React.FC = () => {
       if (response.ok) {
         await loadNotes();
         const data = await response.json();
-        navigate(`/wiki/${data.note.note_id}`);
+        // Используем note_id из ответа backend
+        const noteId = data.note.note_id || data.note.id;
+        navigate(`/wiki/${noteId}`);
       }
     } catch (error) {
       console.error('Error creating note:', error);
