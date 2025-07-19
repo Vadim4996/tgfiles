@@ -1,53 +1,53 @@
-#!/usr/bin/env bash
+#!/bin/bash
+
 set -e
 
-# Абсолютный путь к директории скрипта (корень проекта)
-ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# Цвета для вывода
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
 
-echo "🚀 Запуск Telegram Mini App..."
-
-if command -v tmux &> /dev/null; then
-    echo "📦 Используем tmux для параллельного запуска..."
-
-    tmux new-session -d -s miniapp
-
-    # Бэкенд в первом окне
-    tmux send-keys -t miniapp \
-      "cd \"$ROOT_DIR/server\" && HOST=0.0.0.0 node app.js" C-m
-
-    # Фронтенд во втором окне
-    tmux new-window -t miniapp -n frontend
-    tmux send-keys -t miniapp:frontend \
-      "cd \"$ROOT_DIR\" && pnpm install && pnpm run dev" C-m
-
-    tmux attach-session -t miniapp
-else
-    echo "📦 tmux не найден, запускаем в фоне..."
-
-    # Запуск бэкенда
-    echo "🔧 Запуск бэкенда..."
-    (cd "$ROOT_DIR/server" && HOST=0.0.0.0 node app.js) &
-    BACKEND_PID=$!
-
-    sleep 2
-
-    # Запуск фронтенда
-    echo "🎨 Запуск фронтенда..."
-    (
-      cd "$ROOT_DIR" \
-      && pnpm install \
-      && pnpm run dev
-    ) &
-    FRONTEND_PID=$!
-
-    echo "✅ Приложение запущено!"
-    echo "🔧 Бэкенд PID: $BACKEND_PID"
-    echo "🎨 Фронтенд PID: $FRONTEND_PID"
-    echo ""
-    echo "📱 Фронтенд: http://localhost:5173"
-    echo "🔌 Бэкенд: http://localhost:3001"
-    echo ""
-    echo "Для остановки нажмите Ctrl+C"
-
-    wait
+# Проверка наличия package.json
+if [ ! -f package.json ]; then
+  echo -e "${RED}❌ Ошибка: package.json не найден. Запустите скрипт из корня проекта.${NC}"
+  exit 1
 fi
+
+# Проверка .env
+if [ ! -f .env ]; then
+  echo -e "${RED}❌ Ошибка: .env файл не найден. Создайте .env файл с JWT_SECRET и DATABASE_URL.${NC}"
+  exit 1
+fi
+
+# Установка зависимостей frontend
+if [ ! -d node_modules ]; then
+  echo -e "${YELLOW}📦 Установка зависимостей frontend...${NC}"
+  pnpm install || npm install
+fi
+
+# Установка зависимостей backend
+if [ ! -d server/node_modules ]; then
+  echo -e "${YELLOW}📦 Установка зависимостей backend...${NC}"
+  cd server && pnpm install || npm install
+  cd ..
+fi
+
+echo -e "${GREEN}✅ Все зависимости установлены${NC}"
+
+# Запуск backend в фоне
+cd server
+node app.js &
+BACK_PID=$!
+cd ..
+
+# Ждем, чтобы backend успел стартовать
+sleep 2
+
+echo -e "${YELLOW}🌐 Запуск frontend...${NC}"
+
+# Запуск frontend
+npm run dev
+
+# При завершении frontend убиваем backend
+trap "kill $BACK_PID" EXIT 
