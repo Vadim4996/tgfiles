@@ -162,8 +162,10 @@ const Wiki: React.FC = () => {
   };
 
   const handleSaveNote = async () => {
-    if (!selectedNote) return;
-    
+    if (!selectedNote || !selectedNote.id) {
+      alert('Не выбрана заметка для сохранения!');
+      return;
+    }
     setIsSaving(true);
     try {
       const response = await fetch(`/api/notes/${selectedNote.id}`, {
@@ -178,12 +180,15 @@ const Wiki: React.FC = () => {
           type: 'note'
         })
       });
-
       if (response.ok) {
         await loadNotes();
         await loadNote(selectedNote.id);
+      } else {
+        const err = await response.text();
+        alert('Ошибка при сохранении заметки: ' + err);
       }
     } catch (error) {
+      alert('Ошибка при сохранении заметки: ' + error);
       console.error('Error saving note:', error);
     } finally {
       setIsSaving(false);
@@ -257,28 +262,31 @@ const Wiki: React.FC = () => {
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (!files || !selectedNote) return;
-
+    if (!files || !selectedNote || !selectedNote.id) {
+      alert('Не выбрана заметка для вложения!');
+      return;
+    }
     for (const file of files) {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('note_id', selectedNote.id);
-
       try {
         const response = await fetch('/api/blobs', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` },
           body: formData
         });
-
         if (response.ok) {
           await loadAttachments(selectedNote.id);
+        } else {
+          const err = await response.text();
+          alert('Ошибка при загрузке файла: ' + err);
         }
       } catch (error) {
+        alert('Ошибка при загрузке файла: ' + error);
         console.error('Error uploading file:', error);
       }
     }
-
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
