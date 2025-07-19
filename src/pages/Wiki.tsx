@@ -31,6 +31,7 @@ interface Note {
   updated_at: string;
   attributes?: Array<{ name: string; value: string }>;
   children?: Note[];
+  type?: string;
 }
 
 interface Blob {
@@ -241,7 +242,26 @@ const Wiki: React.FC = () => {
     }
   };
 
+  // Вспомогательная функция для получения плоского списка всех заметок
+  const flattenNotes = (notes: Note[]): Note[] => {
+    let result: Note[] = [];
+    for (const note of notes) {
+      result.push(note);
+      if (note.children && note.children.length > 0) {
+        result = result.concat(flattenNotes(note.children));
+      }
+    }
+    return result;
+  };
+
   const handleMoveNote = async (noteId: string, newParentId: string | null) => {
+    // Находим заметку по id
+    const allNotes = flattenNotes(notes);
+    const note = allNotes.find(n => n.id === noteId);
+    if (!note) {
+      alert('Заметка не найдена!');
+      return;
+    }
     try {
       const response = await fetch(`/api/notes/${noteId}`, {
         method: 'PUT',
@@ -249,13 +269,21 @@ const Wiki: React.FC = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ parent_id: newParentId, type: 'note' })
+        body: JSON.stringify({
+          title: note.title || 'Без названия',
+          content: note.content || '',
+          parent_id: newParentId,
+          type: note.type || 'note'
+        })
       });
-
       if (response.ok) {
         await loadNotes();
+      } else {
+        const err = await response.text();
+        alert('Ошибка при перемещении заметки: ' + err);
       }
     } catch (error) {
+      alert('Ошибка при перемещении заметки: ' + error);
       console.error('Error moving note:', error);
     }
   };
@@ -368,9 +396,30 @@ const Wiki: React.FC = () => {
     ));
   };
 
-  const filteredNotes = notes.filter(note => 
-    note.title.toLowerCase().includes(searchTerm.toLowerCase())
+  // Рендер списка для поиска
+  const renderFlatNoteList = (notes: Note[]) => (
+    <div>
+      {notes.map(note => (
+        <div key={note.id} className={
+          `rounded px-2 py-1 ${selectedNote && selectedNote.id === note.id ? 'bg-[#313131] text-[#fff]' : 'hover:bg-[#262626]'} cursor-pointer`
+        }>
+          <button
+            onClick={() => navigate(`/wiki/${note.id}`)}
+            className="flex items-center flex-1 text-left py-1 px-2 rounded w-full"
+            style={{ background: 'none', color: 'inherit' }}
+          >
+            <span className="text-[#ccc] mr-1">
+              <FileText size={16} />
+            </span>
+            <span className="truncate">{note.title}</span>
+          </button>
+        </div>
+      ))}
+    </div>
   );
+
+  const allNotesFlat = flattenNotes(notes);
+  const filteredNotesFlat = allNotesFlat.filter(note => note.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <div className="flex h-screen min-h-screen bg-[#272727] text-[#ccc]">
@@ -394,9 +443,9 @@ const Wiki: React.FC = () => {
             />
           </div>
         </div>
-        {/* Notes Tree */}
+        {/* Notes Tree или Flat List */}
         <ScrollArea className="flex-1 p-4">
-          {renderNoteTree(filteredNotes)}
+          {searchTerm.trim() ? renderFlatNoteList(filteredNotesFlat) : renderNoteTree(notes)}
         </ScrollArea>
       </div>
       {/* Main Content */}
