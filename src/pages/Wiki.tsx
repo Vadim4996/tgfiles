@@ -317,26 +317,26 @@ const Wiki: React.FC = () => {
 
   const renderNoteTree = (notes: Note[], level = 0) => {
     return notes.map(note => (
-      <div key={note.id} className="select-none">
-        <div className="flex items-center group hover:bg-gray-700 rounded px-2 py-1">
-          <div className="flex items-center flex-1 min-w-0">
-            <button
-              onClick={() => navigate(`/wiki/${note.id}`)}
-              className="flex items-center flex-1 text-left py-1 px-2 rounded hover:bg-gray-600 transition-colors"
-            >
-              <span className="text-gray-400 mr-1">
-                {note.children && note.children.length > 0 ? <ChevronRight size={16} /> : <FileText size={16} />}
-              </span>
-              <span className="truncate">{note.title}</span>
-            </button>
-          </div>
-          
+      <div key={note.id} className={
+        `rounded px-2 py-1 ${selectedNote && selectedNote.id === note.id ? 'bg-[#313131] text-[#fff]' : 'hover:bg-[#262626]'} cursor-pointer`
+      }>
+        <div className="flex items-center">
+          <button
+            onClick={() => navigate(`/wiki/${note.id}`)}
+            className="flex items-center flex-1 text-left py-1 px-2 rounded w-full"
+            style={{ background: 'none', color: 'inherit' }}
+          >
+            <span className="text-[#ccc] mr-1">
+              {note.children && note.children.length > 0 ? <ChevronRight size={16} /> : <FileText size={16} />}
+            </span>
+            <span className="truncate">{note.title}</span>
+          </button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
-                className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                className="h-6 w-6 p-0"
               >
                 <img src="/gear.png" alt="Настройки" className="w-4 h-4" />
               </Button>
@@ -359,7 +359,6 @@ const Wiki: React.FC = () => {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        
         {note.children && note.children.length > 0 && (
           <div className="ml-4">
             {renderNoteTree(note.children, level + 1)}
@@ -374,49 +373,45 @@ const Wiki: React.FC = () => {
   );
 
   return (
-    <div className="flex h-screen bg-gray-900 text-white">
+    <div className="flex h-screen min-h-screen bg-[#272727] text-[#ccc]">
       {/* Sidebar */}
-      <div className="w-80 bg-gray-800 border-r border-gray-700 flex flex-col">
+      <div className="w-80 bg-[#1f1f1f] border-r border-[#313131] flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-gray-700">
+        <div className="p-4 border-b border-[#454545]">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-xl font-bold">База знаний</h1>
-            <Button onClick={handleCreateNote} size="sm">
+            <Button onClick={handleCreateNote} size="sm" className="bg-[#262626] border border-[#313131] text-[#ccc] hover:bg-[#313131] shadow-lg">
               <Plus size={16} />
             </Button>
           </div>
-          
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#ccc]" size={16} />
             <Input
               placeholder="Поиск заметок..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-gray-700 border-gray-600 text-white"
+              className="pl-10 bg-[#262626] border-[#313131] text-[#ccc]"
             />
           </div>
         </div>
-
         {/* Notes Tree */}
         <ScrollArea className="flex-1 p-4">
           {renderNoteTree(filteredNotes)}
         </ScrollArea>
       </div>
-
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="bg-gray-800 border-b border-gray-700 p-4">
+        <div className="bg-[#1f1f1f] border-b border-[#454545] p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Button
                 variant="ghost"
-                onClick={() => navigate('/')}
-                className="p-2"
+                onClick={() => navigate('/')} 
+                className="p-2 rounded-full hover:bg-[#313131]"
               >
                 <ArrowLeft size={20} />
               </Button>
-              
               <div className="flex items-center space-x-4">
                 <h1 className="text-xl font-bold">База знаний</h1>
                 {selectedNote && (
@@ -432,7 +427,6 @@ const Wiki: React.FC = () => {
               </div>
             </div>
           </div>
-
           {/* Tags */}
           {selectedNote?.attributes && selectedNote.attributes.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-2">
@@ -444,12 +438,11 @@ const Wiki: React.FC = () => {
             </div>
           )}
         </div>
-
         {/* Note Content */}
         {selectedNote ? (
           <div className="flex-1 flex flex-col">
             {/* Toolbar */}
-            <div className="bg-gray-800 border-b border-gray-700 p-2">
+            <div className="bg-[#1f1f1f] border-b border-[#454545] p-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <Button
@@ -460,15 +453,14 @@ const Wiki: React.FC = () => {
                   >
                     <img src="/save.png" alt="Сохранить" className="w-4 h-4" />
                   </Button>
-                  
                   <Button
                     onClick={() => fileInputRef.current?.click()}
                     size="sm"
                     variant="outline"
+                    className="bg-[#262626] border border-[#313131] text-[#ccc] hover:bg-[#313131]"
                   >
                     <img src="/clip.png" alt="Прикрепить файл" className="w-4 h-4" />
                   </Button>
-                  
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -479,9 +471,8 @@ const Wiki: React.FC = () => {
                 </div>
               </div>
             </div>
-
             {/* Editor */}
-            <div className="flex-1 p-4">
+            <div className="flex-1 p-4 bg-[#262626] text-[#ccc]">
               <div className="h-full flex flex-col">
                 <ReactQuill
                   theme="snow"
@@ -489,10 +480,9 @@ const Wiki: React.FC = () => {
                   onChange={setNoteContent}
                   modules={quillModules}
                   formats={quillFormats}
-                  className="flex-1 bg-gray-800 text-white"
+                  className="flex-1 bg-[#262626] text-[#ccc]"
                   style={{ height: '300px' }}
                 />
-                
                 {/* Attachments Section */}
                 {attachments.length > 0 && (
                   <div className="mt-6">
@@ -515,22 +505,7 @@ const Wiki: React.FC = () => {
                             <div className="text-sm font-medium truncate" title={blob.name}>
                               {blob.name}
                             </div>
-                            <div className="text-xs text-gray-400">
-                              {(blob.size / 1024).toFixed(1)} KB
-                            </div>
                           </div>
-                          
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteAttachment(blob.id);
-                            }}
-                            className="delete-btn"
-                          >
-                            ×
-                          </Button>
                         </div>
                       ))}
                     </div>
@@ -540,11 +515,8 @@ const Wiki: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-400">
-            <div className="text-center">
-              <FileText size={48} className="mx-auto mb-4" />
-              <p>Выберите заметку для редактирования</p>
-            </div>
+          <div className="flex-1 flex items-center justify-center bg-[#262626] text-[#ccc]">
+            <span>Выберите заметку для просмотра или создайте новую.</span>
           </div>
         )}
       </div>
