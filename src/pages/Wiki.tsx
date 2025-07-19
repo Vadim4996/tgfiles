@@ -168,7 +168,8 @@ const Wiki: React.FC = () => {
         },
         body: JSON.stringify({
           title: noteTitle,
-          content: noteContent
+          content: noteContent,
+          type: 'note'
         })
       });
 
@@ -194,7 +195,8 @@ const Wiki: React.FC = () => {
         body: JSON.stringify({
           title: 'Новая заметка',
           content: '',
-          parent_id: selectedNote?.id || null
+          parent_id: selectedNote?.id || null,
+          type: 'note'
         })
       });
 
@@ -234,7 +236,7 @@ const Wiki: React.FC = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ parent_id: newParentId })
+        body: JSON.stringify({ parent_id: newParentId, type: 'note' })
       });
 
       if (response.ok) {
