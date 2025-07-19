@@ -24,6 +24,23 @@ app.use((req, res, next) => {
   next();
 });
 
+// Middleware для извлечения username из JWT токена
+const extractUsername = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  
+  const token = authHeader.substring(7);
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.username = decoded.username;
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+};
+
 // Простой тестовый endpoint
 app.get("/api/test", (req, res) => {
   console.log("Тестовый запрос получен");
@@ -279,12 +296,11 @@ app.patch("/api/vector-collections/:username/move", async (req, res) => {
 
 // --- CRUD для заметок (notes) ---
 // Получить дерево заметок пользователя
-app.get('/api/notes/:username', async (req, res) => {
-  const { username } = req.params;
+app.get('/api/notes', extractUsername, async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT * FROM notes WHERE username = $1 AND is_deleted = FALSE ORDER BY note_position ASC, date_created ASC`,
-      [username]
+      [req.username]
     );
     res.json({ rows: result.rows });
   } catch (e) {
@@ -294,12 +310,13 @@ app.get('/api/notes/:username', async (req, res) => {
 });
 
 // Получить одну заметку по note_id
-app.get('/api/note/:noteId', async (req, res) => {
+app.get('/api/notes/:noteId', extractUsername, async (req, res) => {
   const { noteId } = req.params;
+  
   try {
     const result = await pool.query(
-      `SELECT * FROM notes WHERE note_id = $1`,
-      [noteId]
+      `SELECT * FROM notes WHERE note_id = $1 AND username = $2`,
+      [noteId, req.username]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'Заметка не найдена' });
     res.json({ note: result.rows[0] });
@@ -310,17 +327,18 @@ app.get('/api/note/:noteId', async (req, res) => {
 });
 
 // Создать новую заметку
-app.post('/api/notes', async (req, res) => {
+app.post('/api/notes', extractUsername, async (req, res) => {
   const {
-    username, parent_note_id, title, content, type, mime, is_protected, is_expanded, note_position, prefix, attributes
+    parent_id, title, content, type, mime, is_protected, is_expanded, note_position, prefix, attributes
   } = req.body;
+  
   try {
     const note_id = uuidv4();
     const now = new Date();
     const result = await pool.query(
       `INSERT INTO notes (note_id, username, parent_note_id, title, content, type, mime, is_protected, is_expanded, note_position, prefix, date_created, utc_date_created, date_modified, utc_date_modified, attributes)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING *`,
-      [note_id, username, parent_note_id, title, content, type, mime, is_protected, is_expanded, note_position, prefix, now, now, now, now, attributes || {}]
+      [note_id, req.username, parent_id, title, content, type, mime, is_protected, is_expanded, note_position, prefix, now, now, now, now, attributes || {}]
     );
     res.json({ note: result.rows[0] });
   } catch (e) {
@@ -330,28 +348,14 @@ app.post('/api/notes', async (req, res) => {
 });
 
 // Обновить заметку
-app.patch('/api/note/:noteId', async (req, res) => {
+app.put('/api/notes/:noteId', extractUsername, async (req, res) => {
   const { noteId } = req.params;
-  const fields = req.body;
-  const allowed = [
-    'parent_note_id','title','content','type','mime','is_protected','is_expanded','note_position','prefix','attributes','is_deleted','delete_id','blob_id','date_modified','utc_date_modified'
-  ];
-  const set = [];
-  const values = [];
-  let idx = 1;
-  for (const key of allowed) {
-    if (fields[key] !== undefined) {
-      set.push(`${key} = $${idx}`);
-      values.push(fields[key]);
-      idx++;
-    }
-  }
-  if (set.length === 0) return res.status(400).json({ error: 'Нет данных для обновления' });
-  values.push(noteId);
+  const { title, content, parent_id } = req.body;
+  
   try {
     const result = await pool.query(
-      `UPDATE notes SET ${set.join(', ')}, date_modified = NOW(), utc_date_modified = NOW() WHERE note_id = $${values.length} RETURNING *`,
-      values
+      `UPDATE notes SET title = $1, content = $2, parent_note_id = $3, date_modified = NOW(), utc_date_modified = NOW() WHERE note_id = $4 AND username = $5 RETURNING *`,
+      [title, content, parent_id, noteId, req.username]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'Заметка не найдена' });
     res.json({ note: result.rows[0] });
@@ -362,12 +366,13 @@ app.patch('/api/note/:noteId', async (req, res) => {
 });
 
 // Удалить заметку (soft delete)
-app.delete('/api/note/:noteId', async (req, res) => {
+app.delete('/api/notes/:noteId', extractUsername, async (req, res) => {
   const { noteId } = req.params;
+  
   try {
     await pool.query(
-      `UPDATE notes SET is_deleted = TRUE, delete_id = $1 WHERE note_id = $2`,
-      [uuidv4(), noteId]
+      `UPDATE notes SET is_deleted = TRUE, delete_id = $1 WHERE note_id = $2 AND username = $3`,
+      [uuidv4(), noteId, req.username]
     );
     res.json({ success: true });
   } catch (e) {
@@ -450,15 +455,25 @@ app.delete('/api/attribute/:id', async (req, res) => {
 const multer = require('multer');
 const upload = multer();
 // Загрузить blob
-app.post('/api/blobs', upload.fields([{ name: 'file' }, { name: 'note_id' }]), async (req, res) => {
+app.post('/api/blobs', extractUsername, upload.fields([{ name: 'file' }, { name: 'note_id' }]), async (req, res) => {
   console.log('=== POST /api/blobs ===');
   console.log('req.body:', req.body);
   console.log('req.files:', req.files);
   const file = req.files?.file?.[0];
   const note_id = req.body.note_id;
   if (!file || !note_id) return res.status(400).json({ error: 'Нет файла или note_id' });
-  const id = uuidv4();
+  
   try {
+    // Проверяем, что заметка принадлежит пользователю
+    const noteCheck = await pool.query(
+      `SELECT 1 FROM notes WHERE note_id = $1 AND username = $2`,
+      [note_id, req.username]
+    );
+    if (noteCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Заметка не найдена' });
+    }
+    
+    const id = uuidv4();
     await pool.query(
       `INSERT INTO blobs (id, note_id, data, mime, size, filename) VALUES ($1,$2,$3,$4,$5,$6)`,
       [id, note_id, file.buffer, file.mimetype, file.size, file.originalname]
@@ -470,10 +485,16 @@ app.post('/api/blobs', upload.fields([{ name: 'file' }, { name: 'note_id' }]), a
   }
 });
 // Получить blob
-app.get('/api/blobs/:id', async (req, res) => {
+app.get('/api/blobs/:id', extractUsername, async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await pool.query(`SELECT * FROM blobs WHERE id = $1`, [id]);
+    // Проверяем, что blob принадлежит заметке пользователя
+    const result = await pool.query(
+      `SELECT b.* FROM blobs b 
+       JOIN notes n ON b.note_id = n.note_id 
+       WHERE b.id = $1 AND n.username = $2`,
+      [id, req.username]
+    );
     if (result.rows.length === 0) return res.status(404).json({ error: 'Blob не найден' });
     const blob = result.rows[0];
     res.setHeader('Content-Type', blob.mime || 'application/octet-stream');
@@ -485,9 +506,20 @@ app.get('/api/blobs/:id', async (req, res) => {
   }
 });
 // Удалить blob
-app.delete('/api/blobs/:id', async (req, res) => {
+app.delete('/api/blobs/:id', extractUsername, async (req, res) => {
   const { id } = req.params;
   try {
+    // Проверяем, что blob принадлежит заметке пользователя
+    const blobCheck = await pool.query(
+      `SELECT b.id FROM blobs b 
+       JOIN notes n ON b.note_id = n.note_id 
+       WHERE b.id = $1 AND n.username = $2`,
+      [id, req.username]
+    );
+    if (blobCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Blob не найден' });
+    }
+    
     await pool.query(`DELETE FROM blobs WHERE id = $1`, [id]);
     res.json({ success: true });
   } catch (e) {
@@ -497,10 +529,20 @@ app.delete('/api/blobs/:id', async (req, res) => {
 });
 
 // Получить вложения для заметки
-app.get('/api/blobs', async (req, res) => {
+app.get('/api/blobs', extractUsername, async (req, res) => {
   const { note_id } = req.query;
   if (!note_id) return res.json({ rows: [] });
+  
   try {
+    // Проверяем, что заметка принадлежит пользователю
+    const noteCheck = await pool.query(
+      `SELECT 1 FROM notes WHERE note_id = $1 AND username = $2`,
+      [note_id, req.username]
+    );
+    if (noteCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Заметка не найдена' });
+    }
+    
     const result = await pool.query(
       `SELECT * FROM blobs WHERE note_id = $1 ORDER BY created_at ASC`,
       [note_id]
