@@ -42,7 +42,7 @@ interface Blob {
 }
 
 const Wiki: React.FC = () => {
-  const { telegramUsername } = useAuth();
+  const { telegramUsername, token } = useAuth();
   const navigate = useNavigate();
   const { noteId } = useParams<{ noteId: string }>();
   const [notes, setNotes] = useState<Note[]>([]);
@@ -76,7 +76,7 @@ const Wiki: React.FC = () => {
 
   useEffect(() => {
     loadNotes();
-  }, [telegramUsername]);
+  }, [token]);
 
   useEffect(() => {
     if (noteId) {
@@ -92,7 +92,7 @@ const Wiki: React.FC = () => {
   const loadNotes = async () => {
     try {
       const response = await fetch('/api/notes', {
-        headers: { 'Authorization': `Bearer ${telegramUsername}` }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
         const data = await response.json();
@@ -107,7 +107,7 @@ const Wiki: React.FC = () => {
   const loadNote = async (id: string) => {
     try {
       const response = await fetch(`/api/notes/${id}`, {
-        headers: { 'Authorization': `Bearer ${telegramUsername}` }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
         const note = await response.json();
@@ -124,7 +124,7 @@ const Wiki: React.FC = () => {
   const loadAttachments = async (noteId: string) => {
     try {
       const response = await fetch(`/api/blobs?note_id=${noteId}`, {
-        headers: { 'Authorization': `Bearer ${telegramUsername}` }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
         const data = await response.json();
@@ -164,7 +164,7 @@ const Wiki: React.FC = () => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${telegramUsername}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           title: noteTitle,
@@ -189,7 +189,7 @@ const Wiki: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${telegramUsername}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           title: 'Новая заметка',
@@ -212,7 +212,7 @@ const Wiki: React.FC = () => {
     try {
       const response = await fetch(`/api/notes/${noteId}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${telegramUsername}` }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
 
       if (response.ok) {
@@ -232,7 +232,7 @@ const Wiki: React.FC = () => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${telegramUsername}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ parent_id: newParentId })
       });
@@ -257,7 +257,7 @@ const Wiki: React.FC = () => {
       try {
         const response = await fetch('/api/blobs', {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${telegramUsername}` },
+          headers: { 'Authorization': `Bearer ${token}` },
           body: formData
         });
 
@@ -278,7 +278,7 @@ const Wiki: React.FC = () => {
     try {
       const response = await fetch(`/api/blobs/${blobId}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${telegramUsername}` }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
 
       if (response.ok && selectedNote) {

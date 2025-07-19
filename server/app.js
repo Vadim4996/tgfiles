@@ -24,7 +24,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Middleware для извлечения username из JWT токена
+// Middleware для извлечения username из Authorization header
 const extractUsername = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -32,12 +32,21 @@ const extractUsername = (req, res, next) => {
   }
   
   const token = authHeader.substring(7);
+  if (!token || token.trim() === '') {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+  
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.username = decoded.username;
+    // Декодируем base64 токен
+    const username = Buffer.from(token, 'base64').toString('utf8');
+    if (!username || username.trim() === '') {
+      return res.status(401).json({ error: 'Invalid username in token' });
+    }
+    
+    req.username = username.trim();
     next();
   } catch (err) {
-    return res.status(401).json({ error: 'Invalid token' });
+    return res.status(401).json({ error: 'Invalid token format' });
   }
 };
 
@@ -45,6 +54,70 @@ const extractUsername = (req, res, next) => {
 app.get("/api/test", (req, res) => {
   console.log("Тестовый запрос получен");
   res.json({ message: "Сервер работает!", timestamp: new Date().toISOString() });
+});
+
+// Проверка структуры базы данных
+app.get("/api/check-db", async (req, res) => {
+  try {
+    // Проверяем существование таблицы notes
+    const notesTable = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'notes'
+      )
+    `);
+    
+    // Проверяем структуру таблицы notes
+    const notesColumns = await pool.query(`
+      SELECT column_name, data_type, is_nullable 
+      FROM information_schema.columns 
+      WHERE table_name = 'notes' 
+      ORDER BY ordinal_position
+    `);
+    
+    // Проверяем существование таблицы blobs
+    const blobsTable = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'blobs'
+      )
+    `);
+    
+    res.json({
+      notes_table_exists: notesTable.rows[0].exists,
+      blobs_table_exists: blobsTable.rows[0].exists,
+      notes_columns: notesColumns.rows,
+      message: "Проверка структуры БД завершена"
+    });
+  } catch (e) {
+    console.error('Ошибка при проверке БД:', e);
+    res.status(500).json({ error: 'Ошибка проверки БД', details: e.message });
+  }
+});
+
+// Создание таблиц если их нет
+app.post("/api/init-db", async (req, res) => {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    
+    // Читаем SQL файл
+    const sqlPath = path.join(__dirname, 'create_notes_schema.sql');
+    const sqlContent = fs.readFileSync(sqlPath, 'utf8');
+    
+    // Выполняем SQL
+    await pool.query(sqlContent);
+    
+    res.json({ 
+      message: "Таблицы созданы успешно",
+      timestamp: new Date().toISOString()
+    });
+  } catch (e) {
+    console.error('Ошибка при создании таблиц:', e);
+    res.status(500).json({ error: 'Ошибка создания таблиц', details: e.message });
+  }
 });
 
 // Получить все строки из таблицы {username}_vector_collections

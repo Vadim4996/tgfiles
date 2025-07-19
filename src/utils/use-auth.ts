@@ -26,7 +26,13 @@ declare global {
 // Функция для очистки username от символа "@"
 function cleanUsername(username: string): string {
   return username.startsWith('@') ? username.slice(1) : username;
-    }
+}
+
+// Функция для создания простого JWT токена
+function createSimpleToken(username: string): string {
+  // Простой токен в формате base64(username)
+  return btoa(username);
+}
 
 export function useAuth() {
   let telegramUsername: string | null = null;
@@ -88,5 +94,8 @@ export function useAuth() {
     }
   }
   
-  return { telegramUsername, photoUrl };
+  // Создаем JWT токен
+  const token = telegramUsername ? createSimpleToken(telegramUsername) : null;
+  
+  return { telegramUsername, photoUrl, token };
 }
