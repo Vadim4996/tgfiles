@@ -202,8 +202,8 @@ const Wiki: React.FC = () => {
 
       if (response.ok) {
         await loadNotes();
-        const newNote = await response.json();
-        navigate(`/wiki/${newNote.id}`);
+        const data = await response.json();
+        navigate(`/wiki/${data.note.note_id}`);
       }
     } catch (error) {
       console.error('Error creating note:', error);
