@@ -471,6 +471,7 @@ app.delete('/api/notes/:noteId', extractUsername, async (req, res) => {
 
 // Новый endpoint для обновления заметки через POST + FormData
 app.post('/api/notes/update', extractUsername, upload.none(), async (req, res) => {
+  console.log('POST /api/notes/update req.body:', req.body);
   const note_id = req.body.note_id;
   const title = req.body.title;
   const content = req.body.content;
