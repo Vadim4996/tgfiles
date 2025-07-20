@@ -5,6 +5,9 @@ const jwt = require("jsonwebtoken");
 const pool = require("./db.cjs");
 const { v4: uuidv4 } = require('uuid');
 
+const multer = require('multer');
+const upload = multer();
+
 const JWT_SECRET = process.env.JWT_SECRET || "verysecretkey"; // Смените в бою!
 const app = express();
 app.use(cors({ origin: true, credentials: true }));
@@ -559,8 +562,6 @@ app.delete('/api/attribute/:id', async (req, res) => {
 });
 
 // --- CRUD для blobs (вложений) ---
-const multer = require('multer');
-const upload = multer();
 // Загрузить blob
 app.post('/api/blobs', extractUsername, upload.fields([{ name: 'file' }, { name: 'note_id' }]), async (req, res) => {
   console.log('=== POST /api/blobs ===');
