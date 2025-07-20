@@ -401,18 +401,28 @@ app.get('/api/notes/:noteId', extractUsername, async (req, res) => {
 });
 
 // Создать новую заметку
-app.post('/api/notes', extractUsername, async (req, res) => {
-  const {
-    parent_id, title, content, type, mime, is_protected, is_expanded, note_position, prefix, attributes
-  } = req.body;
-  
+app.post('/api/notes', extractUsername, upload.none(), async (req, res) => {
+  // Логируем body для отладки
+  console.log('POST /api/notes req.body:', req.body);
+  // Для FormData в некоторых WebView поля могут быть не в req.body, а в req.body.get
+  let title = req.body.title;
+  let content = req.body.content;
+  let parent_id = req.body.parent_id;
+  let type = req.body.type;
+  // Попробуем получить из FormData, если обычный body пустой
+  if (!title && typeof req.body.get === 'function') {
+    title = req.body.get('title');
+    content = req.body.get('content');
+    parent_id = req.body.get('parent_id');
+    type = req.body.get('type');
+  }
   try {
     const note_id = uuidv4();
     const now = new Date();
     const result = await pool.query(
       `INSERT INTO notes (note_id, username, parent_note_id, title, content, type, mime, is_protected, is_expanded, note_position, prefix, date_created, utc_date_created, date_modified, utc_date_modified, attributes)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING *`,
-      [note_id, req.username, parent_id, title, content, type, mime, is_protected, is_expanded, note_position, prefix, now, now, now, now, attributes || {}]
+      [note_id, req.username, parent_id, title, content, type, null, null, null, null, null, now, now, now, now, {}]
     );
     res.json({ note: result.rows[0] });
   } catch (e) {
