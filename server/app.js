@@ -412,6 +412,7 @@ app.post('/api/notes', extractUsername, upload.none(), async (req, res) => {
   let content = req.body.content;
   let parent_id = req.body.parent_id;
   let type = req.body.type;
+  if (parent_id === '') parent_id = null;
   // Попробуем получить из FormData, если обычный body пустой
   if (!title && typeof req.body.get === 'function') {
     title = req.body.get('title');
