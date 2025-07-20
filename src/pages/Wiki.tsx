@@ -522,6 +522,12 @@ const Wiki: React.FC = () => {
             {/* Editor */}
             <div className="flex-1 p-4 bg-[#262626] text-[#ccc]">
               <div className="h-full flex flex-col">
+                <Input
+                  value={noteTitle}
+                  onChange={e => setNoteTitle(e.target.value)}
+                  placeholder="Название заметки"
+                  className="mb-4 bg-[#1f1f1f] border-[#313131] text-[#fff] font-bold text-lg"
+                />
                 <ReactQuill
                   theme="snow"
                   value={noteContent}
