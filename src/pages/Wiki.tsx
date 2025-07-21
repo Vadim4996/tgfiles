@@ -519,7 +519,7 @@ const Wiki: React.FC = () => {
         {selectedNote ? (
           <div className="flex-1 flex flex-col">
             {/* Toolbar */}
-            <div className="bg-[#1f1f1f] border-b border-[#454545] p-2">
+            <div className="bg-[#1f1f1f] border-b border-[#454545] p-2 quill-toolbar-custom">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <Button
@@ -549,7 +549,7 @@ const Wiki: React.FC = () => {
               </div>
             </div>
             {/* Editor */}
-            <div className="flex-1 p-4 bg-[#262626] text-[#ccc]">
+            <div className="flex-1 p-4 bg-[#262626] text-[#ccc] quill-editor-custom">
               <div className="h-full flex flex-col">
                 <Input
                   value={noteTitle}
@@ -563,63 +563,60 @@ const Wiki: React.FC = () => {
                   onChange={setNoteContent}
                   modules={quillModules}
                   formats={quillFormats}
-                  className="flex-1 bg-[#262626] text-[#ccc]"
+                  className="flex-1 bg-[#262626] text-[#ccc] quill-main"
                   style={{ height: '300px' }}
                 />
-                {/* Attachments Section */}
-                {Array.isArray(attachments) && attachments.length > 0 && (
-                  <div className="mt-2">
-                    <h3 className="text-lg font-semibold mb-3">Вложения</h3>
-                    <div className="attachment-grid">
-                      {attachments.map((blob) => {
-                        const mime = typeof blob.mime_type === 'string' ? blob.mime_type : '';
-                        const name = typeof blob.filename === 'string' ? blob.filename : (typeof blob.name === 'string' ? blob.name : 'Без имени');
-                        let icon = '📎';
-                        if (mime.startsWith('image/')) icon = '🖼️';
-                        else if (mime.startsWith('video/')) icon = '🎥';
-                        else if (mime.startsWith('audio/')) icon = '🎵';
-                        else if (mime.includes('pdf')) icon = '📄';
-                        else if (mime.includes('text')) icon = '📝';
-
-                        // Предпросмотр
-                        let preview = null;
-                        if (mime.startsWith('image/')) {
-                          preview = (
-                            <AttachmentPreview blobId={blob.id} mime={mime} token={token} filename={name} />
-                          );
-                        } else if (mime.includes('pdf')) {
-                          preview = (
-                            <AttachmentPreview blobId={blob.id} mime={mime} token={token} filename={name} isPdf />
-                          );
-                        } else if (mime.startsWith('text/')) {
-                          preview = (
-                            <AttachmentPreview blobId={blob.id} mime={mime} token={token} filename={name} isText />
-                          );
-                        }
-                        return (
-                          <div
-                            key={blob.id}
-                            className="attachment-item group"
-                          >
-                            <div className="text-center">
-                              <div className="text-2xl mb-2">{icon}</div>
-                              <div className="text-sm font-medium truncate" title={name}>{name}</div>
-                              {preview}
-                              <button
-                                className="mt-2 text-xs text-blue-400 underline hover:text-blue-600"
-                                onClick={() => handleAttachmentClick(blob)}
-                              >
-                                Скачать
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
+            {/* Вложения под редактором */}
+            {Array.isArray(attachments) && attachments.length > 0 && (
+              <div className="mt-2 px-4">
+                <h3 className="text-lg font-semibold mb-3">Вложения</h3>
+                <div className="attachment-grid">
+                  {attachments.map((blob) => {
+                    const mime = typeof blob.mime_type === 'string' ? blob.mime_type : '';
+                    const name = typeof blob.filename === 'string' ? blob.filename : (typeof blob.name === 'string' ? blob.name : 'Без имени');
+                    let icon = '📎';
+                    if (mime.startsWith('image/')) icon = '🖼️';
+                    else if (mime.startsWith('video/')) icon = '🎥';
+                    else if (mime.startsWith('audio/')) icon = '🎵';
+                    else if (mime.includes('pdf')) icon = '📄';
+                    else if (mime.includes('text')) icon = '📝';
+                    // Предпросмотр
+                    let preview = null;
+                    if (mime.startsWith('image/')) {
+                      preview = (
+                        <AttachmentPreview blobId={blob.id} mime={mime} token={token} filename={name} />
+                      );
+                    } else if (mime.includes('pdf')) {
+                      preview = (
+                        <AttachmentPreview blobId={blob.id} mime={mime} token={token} filename={name} isPdf />
+                      );
+                    } else if (mime.startsWith('text/')) {
+                      preview = (
+                        <AttachmentPreview blobId={blob.id} mime={mime} token={token} filename={name} isText />
+                      );
+                    }
+                    return (
+                      <div
+                        key={blob.id}
+                        className="attachment-item group"
+                      >
+                        <div className="text-2xl mb-2">{icon}</div>
+                        <div className="text-sm font-medium truncate" title={name}>{name}</div>
+                        {preview}
+                        <button
+                          className="mt-2 text-xs text-blue-400 underline hover:text-blue-600"
+                          onClick={() => handleAttachmentClick(blob)}
+                        >
+                          Скачать
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-center bg-[#262626] text-[#ccc]">
