@@ -568,7 +568,7 @@ const Wiki: React.FC = () => {
                 />
                 {/* Attachments Section */}
                 {Array.isArray(attachments) && attachments.length > 0 && (
-                  <div className="mt-6">
+                  <div className="mt-2">
                     <h3 className="text-lg font-semibold mb-3">Вложения</h3>
                     <div className="attachment-grid">
                       {attachments.map((blob) => {
