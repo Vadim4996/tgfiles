@@ -344,12 +344,29 @@ const Wiki: React.FC = () => {
     }
   };
 
-  const handleAttachmentClick = (blob: Blob) => {
-    // Создаем временную ссылку для скачивания
-    const link = document.createElement('a');
-    link.href = `/api/blobs/${blob.id}`;
-    link.download = blob.name || 'Без имени'; // Используем blob.name или 'Без имени'
-    link.click();
+  const handleAttachmentClick = async (blob: Blob) => {
+    try {
+      const response = await fetch(`/api/blobs/${blob.id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) {
+        alert('Ошибка загрузки файла: ' + response.statusText);
+        return;
+      }
+      const fileBlob = await response.blob();
+      const url = URL.createObjectURL(fileBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = blob.name || 'Без имени';
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+        link.remove();
+      }, 1000);
+    } catch (e) {
+      alert('Ошибка скачивания файла: ' + e);
+    }
   };
 
   const renderNoteTree = (notes: Note[], level = 0) => {
