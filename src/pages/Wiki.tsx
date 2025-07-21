@@ -36,10 +36,12 @@ interface Note {
 
 interface Blob {
   id: string;
-  name: string;
-  mime_type: string;
-  size: number;
-  note_id: string;
+  name?: string;
+  mime_type?: string;
+  size?: number;
+  note_id?: string;
+  mime?: string;
+  filename?: string;
 }
 
 const Wiki: React.FC = () => {
@@ -346,7 +348,7 @@ const Wiki: React.FC = () => {
     // Создаем временную ссылку для скачивания
     const link = document.createElement('a');
     link.href = `/api/blobs/${blob.id}`;
-    link.download = blob.name;
+    link.download = blob.name || 'Без имени'; // Используем blob.name или 'Без имени'
     link.click();
   };
 
