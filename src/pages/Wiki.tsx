@@ -81,6 +81,10 @@ const Wiki: React.FC = () => {
 
   useEffect(() => {
     if (noteId) {
+      setSelectedNote(null); // сбрасываем выбранную заметку перед загрузкой
+      setNoteTitle('');
+      setNoteContent('');
+      setAttachments([]);
       loadNote(noteId);
     } else {
       setSelectedNote(null);
