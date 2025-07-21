@@ -563,7 +563,7 @@ const Wiki: React.FC = () => {
                     onChange={setNoteContent}
                     modules={quillModules}
                     formats={quillFormats}
-                    className="flex-1 bg-[#fff] text-[#23272e] quill-main quill-container-custom"
+                    className="flex-1 quill-main quill-container-custom"
                     style={{ height: '300px' }}
                   />
                 </div>
