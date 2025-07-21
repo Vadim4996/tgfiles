@@ -116,8 +116,8 @@ const Wiki: React.FC = () => {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
-        const note = await response.json();
-        // Маппинг note_id -> id для совместимости с интерфейсом
+        const data = await response.json();
+        const note = data.note;
         setSelectedNote({ ...note, id: note.note_id || note.id });
         setNoteTitle(note.title);
         setNoteContent(note.content);
