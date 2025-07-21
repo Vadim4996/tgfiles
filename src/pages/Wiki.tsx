@@ -552,26 +552,28 @@ const Wiki: React.FC = () => {
                   <div className="mt-6">
                     <h3 className="text-lg font-semibold mb-3">Вложения</h3>
                     <div className="attachment-grid">
-                      {attachments.map((blob) => (
-                        <div
-                          key={blob.id}
-                          className="attachment-item group"
-                          onClick={() => handleAttachmentClick(blob)}
-                        >
-                          <div className="text-center">
-                            <div className="text-2xl mb-2">
-                              {blob.mime_type.startsWith('image/') ? '🖼️' : 
-                               blob.mime_type.startsWith('video/') ? '🎥' :
-                               blob.mime_type.startsWith('audio/') ? '🎵' :
-                               blob.mime_type.includes('pdf') ? '📄' :
-                               blob.mime_type.includes('text') ? '📝' : '📎'}
-                            </div>
-                            <div className="text-sm font-medium truncate" title={blob.name}>
-                              {blob.name}
+                      {attachments.map((blob) => {
+                        const mime = typeof blob.mime_type === 'string' ? blob.mime_type : '';
+                        const name = typeof blob.name === 'string' ? blob.name : 'Без имени';
+                        let icon = '📎';
+                        if (mime.startsWith('image/')) icon = '🖼️';
+                        else if (mime.startsWith('video/')) icon = '🎥';
+                        else if (mime.startsWith('audio/')) icon = '🎵';
+                        else if (mime.includes('pdf')) icon = '📄';
+                        else if (mime.includes('text')) icon = '📝';
+                        return (
+                          <div
+                            key={blob.id}
+                            className="attachment-item group"
+                            onClick={() => handleAttachmentClick(blob)}
+                          >
+                            <div className="text-center">
+                              <div className="text-2xl mb-2">{icon}</div>
+                              <div className="text-sm font-medium truncate" title={name}>{name}</div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
