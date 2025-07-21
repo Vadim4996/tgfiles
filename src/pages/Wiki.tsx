@@ -603,11 +603,11 @@ const Wiki: React.FC = () => {
                         key={blob.id}
                         className="attachment-item group"
                       >
-                        <div className="text-2xl mb-2">{icon}</div>
-                        <div className="text-sm font-medium truncate" title={name}>{name}</div>
+                        <div className="icon">{icon}</div>
+                        <div className="filename" title={name}>{name}</div>
                         {preview}
                         <button
-                          className="mt-2 text-xs text-blue-400 underline hover:text-blue-600"
+                          className="download-btn"
                           onClick={() => handleAttachmentClick(blob)}
                         >
                           Скачать
