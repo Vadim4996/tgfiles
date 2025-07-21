@@ -135,10 +135,11 @@ const Wiki: React.FC = () => {
       });
       if (response.ok) {
         const data = await response.json();
-        setAttachments(data.rows || []);
+        setAttachments(Array.isArray(data.rows) ? data.rows : []);
       }
     } catch (error) {
       console.error('Error loading attachments:', error);
+      setAttachments([]);
     }
   };
 
@@ -538,7 +539,7 @@ const Wiki: React.FC = () => {
                   style={{ height: '300px' }}
                 />
                 {/* Attachments Section */}
-                {attachments.length > 0 && (
+                {Array.isArray(attachments) && attachments.length > 0 && (
                   <div className="mt-6">
                     <h3 className="text-lg font-semibold mb-3">Вложения</h3>
                     <div className="attachment-grid">
