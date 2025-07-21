@@ -515,64 +515,65 @@ const Wiki: React.FC = () => {
             </div>
           )}
         </div>
-        {/* Note Content */}
         {selectedNote ? (
-          <div className="flex-1 flex flex-col">
-            {/* Toolbar */}
-            <div className="bg-[#1f1f1f] border-b border-[#454545] p-2 quill-toolbar-custom">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Button
-                    onClick={handleSaveNote}
-                    disabled={isSaving}
-                    size="sm"
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <img src="/save.png" alt="Сохранить" className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    onClick={() => fileInputRef.current?.click()}
-                    size="sm"
-                    variant="outline"
-                    className="bg-[#262626] border border-[#313131] text-[#ccc] hover:bg-[#313131]"
-                  >
-                    <img src="/clip.png" alt="Прикрепить файл" className="w-4 h-4" />
-                  </Button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    onChange={handleFileUpload}
-                    className="hidden"
+          <>
+            <div className="flex-1 flex flex-col">
+              {/* Toolbar */}
+              <div className="bg-[#1f1f1f] border-b border-[#454545] p-2 quill-toolbar-custom">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      onClick={handleSaveNote}
+                      disabled={isSaving}
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <img src="/save.png" alt="Сохранить" className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      onClick={() => fileInputRef.current?.click()}
+                      size="sm"
+                      variant="outline"
+                      className="bg-[#262626] border border-[#313131] text-[#ccc] hover:bg-[#313131]"
+                    >
+                      <img src="/clip.png" alt="Прикрепить файл" className="w-4 h-4" />
+                    </Button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      multiple
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                  </div>
+                </div>
+              </div>
+              {/* Editor */}
+              <div className="flex-1 p-4 bg-[#262626] text-[#ccc] quill-editor-custom">
+                <div className="h-full flex flex-col">
+                  <Input
+                    value={noteTitle}
+                    onChange={e => setNoteTitle(e.target.value)}
+                    placeholder="Название заметки"
+                    className="mb-4 bg-[#1f1f1f] border-[#313131] text-[#fff] font-bold text-lg"
+                  />
+                  <ReactQuill
+                    theme="snow"
+                    value={noteContent}
+                    onChange={setNoteContent}
+                    modules={quillModules}
+                    formats={quillFormats}
+                    className="flex-1 bg-[#fff] text-[#23272e] quill-main quill-container-custom"
+                    style={{ height: '300px' }}
                   />
                 </div>
               </div>
             </div>
-            {/* Editor */}
-            <div className="flex-1 p-4 bg-[#262626] text-[#ccc] quill-editor-custom">
-              <div className="h-full flex flex-col">
-                <Input
-                  value={noteTitle}
-                  onChange={e => setNoteTitle(e.target.value)}
-                  placeholder="Название заметки"
-                  className="mb-4 bg-[#1f1f1f] border-[#313131] text-[#fff] font-bold text-lg"
-                />
-                <ReactQuill
-                  theme="snow"
-                  value={noteContent}
-                  onChange={setNoteContent}
-                  modules={quillModules}
-                  formats={quillFormats}
-                  className="flex-1 bg-[#262626] text-[#ccc] quill-main"
-                  style={{ height: '300px' }}
-                />
-              </div>
-            </div>
-            {/* Вложения под редактором */}
+            {/* Вложения — вне flex-col, на всю ширину */}
             {Array.isArray(attachments) && attachments.length > 0 && (
-              <div className="mt-2 px-4">
+              <div className="w-full px-4" style={{ marginTop: 8 }}>
                 <h3 className="text-lg font-semibold mb-3">Вложения</h3>
-                <div className="attachment-grid">
+                <div className="attachment-grid" style={{ width: '100%' }}>
                   {attachments.map((blob) => {
                     const mime = typeof blob.mime_type === 'string' ? blob.mime_type : '';
                     const name = typeof blob.filename === 'string' ? blob.filename : (typeof blob.name === 'string' ? blob.name : 'Без имени');
@@ -617,7 +618,7 @@ const Wiki: React.FC = () => {
                 </div>
               </div>
             )}
-          </div>
+          </>
         ) : (
           <div className="flex-1 flex items-center justify-center bg-[#262626] text-[#ccc]">
             <span>Выберите заметку для просмотра или создайте новую.</span>
