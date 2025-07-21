@@ -357,7 +357,7 @@ const Wiki: React.FC = () => {
       const url = URL.createObjectURL(fileBlob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = blob.name || 'Без имени';
+      link.download = blob.filename || blob.name || 'Без имени';
       document.body.appendChild(link);
       link.click();
       setTimeout(() => {
@@ -573,22 +573,44 @@ const Wiki: React.FC = () => {
                     <div className="attachment-grid">
                       {attachments.map((blob) => {
                         const mime = typeof blob.mime_type === 'string' ? blob.mime_type : '';
-                        const name = typeof blob.name === 'string' ? blob.name : 'Без имени';
+                        const name = typeof blob.filename === 'string' ? blob.filename : (typeof blob.name === 'string' ? blob.name : 'Без имени');
                         let icon = '📎';
                         if (mime.startsWith('image/')) icon = '🖼️';
                         else if (mime.startsWith('video/')) icon = '🎥';
                         else if (mime.startsWith('audio/')) icon = '🎵';
                         else if (mime.includes('pdf')) icon = '📄';
                         else if (mime.includes('text')) icon = '📝';
+
+                        // Предпросмотр
+                        let preview = null;
+                        if (mime.startsWith('image/')) {
+                          preview = (
+                            <AttachmentPreview blobId={blob.id} mime={mime} token={token} filename={name} />
+                          );
+                        } else if (mime.includes('pdf')) {
+                          preview = (
+                            <AttachmentPreview blobId={blob.id} mime={mime} token={token} filename={name} isPdf />
+                          );
+                        } else if (mime.startsWith('text/')) {
+                          preview = (
+                            <AttachmentPreview blobId={blob.id} mime={mime} token={token} filename={name} isText />
+                          );
+                        }
                         return (
                           <div
                             key={blob.id}
                             className="attachment-item group"
-                            onClick={() => handleAttachmentClick(blob)}
                           >
                             <div className="text-center">
                               <div className="text-2xl mb-2">{icon}</div>
                               <div className="text-sm font-medium truncate" title={name}>{name}</div>
+                              {preview}
+                              <button
+                                className="mt-2 text-xs text-blue-400 underline hover:text-blue-600"
+                                onClick={() => handleAttachmentClick(blob)}
+                              >
+                                Скачать
+                              </button>
                             </div>
                           </div>
                         );
@@ -610,3 +632,41 @@ const Wiki: React.FC = () => {
 };
 
 export default Wiki; 
+
+// Компонент предпросмотра вложения
+function AttachmentPreview({ blobId, mime, token, filename, isPdf, isText }: { blobId: string, mime: string, token: string, filename: string, isPdf?: boolean, isText?: boolean }) {
+  const [url, setUrl] = React.useState<string | null>(null);
+  const [text, setText] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    let active = true;
+    if (isText) {
+      fetch(`/api/blobs/${blobId}`, { headers: { 'Authorization': `Bearer ${token}` } })
+        .then(r => r.text())
+        .then(data => {
+          if (!active) return;
+          setText(typeof data === 'string' ? data.slice(0, 1000) : '');
+        });
+    } else {
+      fetch(`/api/blobs/${blobId}`, { headers: { 'Authorization': `Bearer ${token}` } })
+        .then(r => r.blob())
+        .then(data => {
+          if (!active) return;
+          setUrl(URL.createObjectURL(data));
+        });
+    }
+    return () => {
+      active = false;
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [blobId, token]);
+  if (isPdf && url) {
+    return <iframe src={url} title={filename} style={{ width: '100%', height: 120, border: 'none', background: '#fff' }} />;
+  }
+  if (mime.startsWith('image/') && url) {
+    return <img src={url} alt={filename} style={{ maxWidth: '100%', maxHeight: 120, borderRadius: 8, margin: '0 auto' }} />;
+  }
+  if (isText && text) {
+    return <pre style={{ maxHeight: 120, overflow: 'auto', background: '#18181b', color: '#fff', borderRadius: 8, padding: 8 }}>{text}</pre>;
+  }
+  return null;
+} 
