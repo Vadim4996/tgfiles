@@ -44,6 +44,13 @@ interface Blob {
 
 const Wiki: React.FC = () => {
   const { telegramUsername, token } = useAuth();
+  if (!telegramUsername || !token) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#272727] text-[#ccc]">
+        <div className="mb-4 text-lg">Ошибка авторизации: не удалось получить username или токен из Telegram. Проверьте запуск через Telegram WebApp.</div>
+      </div>
+    );
+  }
   const navigate = useNavigate();
   const { noteId } = useParams<{ noteId: string }>();
   const [notes, setNotes] = useState<Note[]>([]);
@@ -344,7 +351,8 @@ const Wiki: React.FC = () => {
   };
 
   const renderNoteTree = (notes: Note[], level = 0) => {
-    return notes.map(note => (
+    const safeNotes = Array.isArray(notes) ? notes : [];
+    return safeNotes.map(note => (
       <div key={note.id} className={
         `rounded px-2 py-1 ${selectedNote && selectedNote.id === note.id ? 'bg-[#313131] text-[#fff]' : 'hover:bg-[#262626]'} cursor-pointer`
       }>
@@ -420,6 +428,7 @@ const Wiki: React.FC = () => {
 
   const allNotesFlat = flattenNotes(notes);
   const filteredNotesFlat = allNotesFlat.filter(note => note.title.toLowerCase().includes(searchTerm.toLowerCase()));
+  const safeNotes = Array.isArray(notes) ? notes : [];
 
   return (
     <div className="flex h-screen min-h-screen bg-[#272727] text-[#ccc]">
@@ -445,7 +454,7 @@ const Wiki: React.FC = () => {
         </div>
         {/* Notes Tree или Flat List */}
         <ScrollArea className="flex-1 p-4">
-          {searchTerm.trim() ? renderFlatNoteList(filteredNotesFlat) : renderNoteTree(notes)}
+          {searchTerm.trim() ? renderFlatNoteList(filteredNotesFlat) : renderNoteTree(safeNotes)}
         </ScrollArea>
       </div>
       {/* Main Content */}
