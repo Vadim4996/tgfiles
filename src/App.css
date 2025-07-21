@@ -68,9 +68,9 @@
 .ql-toolbar .ql-picker,
 .ql-toolbar .ql-picker-label,
 .ql-toolbar .ql-picker-item {
-  color: #fff !important;
-  fill: #fff !important;
-  stroke: #fff !important;
+  color: #e5e7eb !important;
+  fill: #e5e7eb !important;
+  stroke: #e5e7eb !important;
   background: transparent !important;
 }
 
@@ -78,11 +78,15 @@
 .ql-toolbar .ql-picker-item:hover,
 .ql-toolbar .ql-picker-label:hover {
   color: #60a5fa !important;
+  fill: #60a5fa !important;
+  stroke: #60a5fa !important;
   background: #23272e !important;
 }
 
 .ql-toolbar button.ql-active {
   color: #60a5fa !important;
+  fill: #60a5fa !important;
+  stroke: #60a5fa !important;
 }
 
 .ql-toolbar .ql-stroke {
