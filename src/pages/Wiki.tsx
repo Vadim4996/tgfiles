@@ -135,7 +135,7 @@ const Wiki: React.FC = () => {
       });
       if (response.ok) {
         const data = await response.json();
-        setAttachments(data);
+        setAttachments(data.rows || []);
       }
     } catch (error) {
       console.error('Error loading attachments:', error);
