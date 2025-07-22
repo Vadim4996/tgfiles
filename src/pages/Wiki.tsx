@@ -569,28 +569,32 @@ const Wiki: React.FC = () => {
                 </div>
               </div>
             </div>
-            {/* Вложения — теперь строго под редактором, с отступами 10px слева/справа */}
+            {/* Вложения — строго под рамкой редактора */}
             {Array.isArray(attachments) && attachments.length > 0 && (
               <div
-                className="attachment-bar px-0"
+                className="attachment-bar"
                 style={{
-                  marginTop: 0,
-                  paddingLeft: 10,
-                  paddingRight: 10,
                   width: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'stretch',
+                  background: '#23272e',
+                  border: 'none',
+                  borderTop: '1px solid #18181b',
+                  borderRadius: '0 0 0.375rem 0.375rem',
+                  margin: 0,
+                  padding: 0
                 }}
               >
-                <h3 className="text-lg font-semibold mb-3" style={{marginLeft: 2}}>Вложения</h3>
+                <h3 className="text-lg font-semibold mb-2" style={{margin: '8px 0 8px 2px'}}>Вложения</h3>
                 <div
                   className="attachment-grid"
                   style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    flexWrap: 'nowrap',
+                    overflowX: 'auto',
+                    gap: '1.2rem',
                     width: '100%',
                     margin: 0,
-                    paddingLeft: 0,
-                    paddingRight: 0,
+                    padding: 0
                   }}
                 >
                   {attachments.map((blob) => {
