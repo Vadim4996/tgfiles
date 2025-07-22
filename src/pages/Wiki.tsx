@@ -99,6 +99,49 @@ const Wiki: React.FC = () => {
     }
   }, [noteId]);
 
+  useEffect(() => {
+    const toolbar = document.querySelector('.ql-toolbar.ql-snow');
+    if (toolbar) {
+      toolbar.querySelectorAll('button, .ql-picker, .ql-picker-label, .ql-picker-item').forEach(el => {
+        const htmlEl = el as HTMLElement;
+        htmlEl.style.background = '#313131';
+        htmlEl.style.color = '#fff';
+        htmlEl.style.fill = '#fff';
+        htmlEl.style.stroke = '#fff';
+        htmlEl.style.border = 'none';
+      });
+      toolbar.querySelectorAll('svg').forEach(svg => {
+        const svgEl = svg as SVGElement;
+        svgEl.style.color = '#fff';
+        svgEl.style.fill = '#fff';
+        svgEl.style.stroke = '#fff';
+      });
+      // Hover и активные — через mouseover/mouseout
+      toolbar.querySelectorAll('button, .ql-picker-item, .ql-picker-label').forEach(el => {
+        const htmlEl = el as HTMLElement;
+        htmlEl.addEventListener('mouseover', () => {
+          htmlEl.style.background = '#444';
+          htmlEl.style.color = '#60a5fa';
+          htmlEl.style.fill = '#60a5fa';
+          htmlEl.style.stroke = '#60a5fa';
+        });
+        htmlEl.addEventListener('mouseout', () => {
+          htmlEl.style.background = '#313131';
+          htmlEl.style.color = '#fff';
+          htmlEl.style.fill = '#fff';
+          htmlEl.style.stroke = '#fff';
+        });
+      });
+      toolbar.querySelectorAll('button.ql-active, .ql-picker-item.ql-selected').forEach(el => {
+        const htmlEl = el as HTMLElement;
+        htmlEl.style.background = '#313131';
+        htmlEl.style.color = '#60a5fa';
+        htmlEl.style.fill = '#60a5fa';
+        htmlEl.style.stroke = '#60a5fa';
+      });
+    }
+  }, []);
+
   const loadNotes = async () => {
     try {
       const response = await fetch('/api/notes', {
