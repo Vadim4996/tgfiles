@@ -580,7 +580,8 @@ const Wiki: React.FC = () => {
                   borderTop: '1px solid #18181b',
                   borderRadius: '0 0 0.375rem 0.375rem',
                   margin: 0,
-                  padding: 0
+                  padding: 0,
+                  marginTop: 8
                 }}
               >
                 <h3 className="text-lg font-semibold mb-2" style={{margin: '8px 0 8px 2px'}}>Вложения</h3>
