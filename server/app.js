@@ -631,7 +631,7 @@ app.delete('/api/blobs/:id', extractUsername, async (req, res) => {
     }
     
     await pool.query(`DELETE FROM blobs WHERE id = $1`, [id]);
-    res.json({ success: true });
+  res.json({ success: true });
   } catch (e) {
     console.error('Ошибка при удалении blob:', e);
     res.status(500).json({ error: 'Ошибка удаления blob', details: e.message });

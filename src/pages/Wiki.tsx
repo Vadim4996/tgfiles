@@ -569,11 +569,30 @@ const Wiki: React.FC = () => {
                 </div>
               </div>
             </div>
-            {/* Вложения — вне flex-col, на всю ширину */}
+            {/* Вложения — теперь строго под редактором, с отступами 10px слева/справа */}
             {Array.isArray(attachments) && attachments.length > 0 && (
-              <div className="w-full px-4" style={{ marginTop: 8 }}>
-                <h3 className="text-lg font-semibold mb-3">Вложения</h3>
-                <div className="attachment-grid" style={{ width: '100%' }}>
+              <div
+                className="attachment-bar px-0"
+                style={{
+                  marginTop: 0,
+                  paddingLeft: 10,
+                  paddingRight: 10,
+                  width: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'stretch',
+                }}
+              >
+                <h3 className="text-lg font-semibold mb-3" style={{marginLeft: 2}}>Вложения</h3>
+                <div
+                  className="attachment-grid"
+                  style={{
+                    width: '100%',
+                    margin: 0,
+                    paddingLeft: 0,
+                    paddingRight: 0,
+                  }}
+                >
                   {attachments.map((blob) => {
                     const mime = typeof blob.mime_type === 'string' ? blob.mime_type : '';
                     const name = typeof blob.filename === 'string' ? blob.filename : (typeof blob.name === 'string' ? blob.name : 'Без имени');
@@ -604,14 +623,15 @@ const Wiki: React.FC = () => {
                         className="attachment-item group"
                       >
                         <div className="icon">{icon}</div>
-                        <div className="filename" title={name}>{name}</div>
-                        {preview}
-                        <button
-                          className="download-btn"
+                        <div
+                          className="filename cursor-pointer hover:text-blue-400"
+                          title={name}
                           onClick={() => handleAttachmentClick(blob)}
+                          style={{textDecoration: 'underline'}}
                         >
-                          Скачать
-                        </button>
+                          {name}
+                        </div>
+                        {preview}
                       </div>
                     );
                   })}
