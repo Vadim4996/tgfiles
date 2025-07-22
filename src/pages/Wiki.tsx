@@ -115,6 +115,8 @@ const Wiki: React.FC = () => {
         svgEl.style.color = '#fff';
         svgEl.style.fill = '#fff';
         svgEl.style.stroke = '#fff';
+        svgEl.setAttribute('fill', '#fff');
+        svgEl.setAttribute('stroke', '#fff');
       });
       // Hover и активные — через mouseover/mouseout
       toolbar.querySelectorAll('button, .ql-picker-item, .ql-picker-label').forEach(el => {
@@ -124,12 +126,28 @@ const Wiki: React.FC = () => {
           htmlEl.style.color = '#60a5fa';
           htmlEl.style.fill = '#60a5fa';
           htmlEl.style.stroke = '#60a5fa';
+          htmlEl.querySelectorAll('svg').forEach(svg => {
+            const svgEl = svg as SVGElement;
+            svgEl.style.color = '#60a5fa';
+            svgEl.style.fill = '#60a5fa';
+            svgEl.style.stroke = '#60a5fa';
+            svgEl.setAttribute('fill', '#60a5fa');
+            svgEl.setAttribute('stroke', '#60a5fa');
+          });
         });
         htmlEl.addEventListener('mouseout', () => {
           htmlEl.style.background = '#313131';
           htmlEl.style.color = '#fff';
           htmlEl.style.fill = '#fff';
           htmlEl.style.stroke = '#fff';
+          htmlEl.querySelectorAll('svg').forEach(svg => {
+            const svgEl = svg as SVGElement;
+            svgEl.style.color = '#fff';
+            svgEl.style.fill = '#fff';
+            svgEl.style.stroke = '#fff';
+            svgEl.setAttribute('fill', '#fff');
+            svgEl.setAttribute('stroke', '#fff');
+          });
         });
       });
       toolbar.querySelectorAll('button.ql-active, .ql-picker-item.ql-selected').forEach(el => {
@@ -138,6 +156,14 @@ const Wiki: React.FC = () => {
         htmlEl.style.color = '#60a5fa';
         htmlEl.style.fill = '#60a5fa';
         htmlEl.style.stroke = '#60a5fa';
+        htmlEl.querySelectorAll('svg').forEach(svg => {
+          const svgEl = svg as SVGElement;
+          svgEl.style.color = '#60a5fa';
+          svgEl.style.fill = '#60a5fa';
+          svgEl.style.stroke = '#60a5fa';
+          svgEl.setAttribute('fill', '#60a5fa');
+          svgEl.setAttribute('stroke', '#60a5fa');
+        });
       });
     }
   }, []);
