@@ -235,3 +235,33 @@
   background: #313131 !important;
 }
 /* --- END --- */
+
+/* --- MAX OVERRIDE FOR QUILL TOOLBAR BUTTONS --- */
+.ql-toolbar.ql-snow button,
+.ql-toolbar.ql-snow .ql-picker,
+.ql-toolbar.ql-snow .ql-picker-label,
+.ql-toolbar.ql-snow .ql-picker-item {
+  color: #fff !important;
+  fill: #fff !important;
+  stroke: #fff !important;
+  background: #313131 !important;
+  border: none !important;
+  box-shadow: none !important;
+  transition: background 0.2s, color 0.2s;
+}
+.ql-toolbar.ql-snow button:hover,
+.ql-toolbar.ql-snow .ql-picker-item:hover,
+.ql-toolbar.ql-snow .ql-picker-label:hover {
+  color: #60a5fa !important;
+  fill: #60a5fa !important;
+  stroke: #60a5fa !important;
+  background: #444 !important;
+}
+.ql-toolbar.ql-snow button.ql-active,
+.ql-toolbar.ql-snow .ql-picker-item.ql-selected {
+  color: #60a5fa !important;
+  fill: #60a5fa !important;
+  stroke: #60a5fa !important;
+  background: #313131 !important;
+}
+/* --- END --- */
