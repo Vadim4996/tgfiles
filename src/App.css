@@ -265,3 +265,7 @@
   background: #313131 !important;
 }
 /* --- END --- */
+
+.ql-toolbar, .quill-toolbar-custom, .ql-toolbar.ql-snow {
+  background: #888 !important;
+}
