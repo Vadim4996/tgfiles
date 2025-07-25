@@ -555,20 +555,18 @@ const Wiki: React.FC = () => {
       <div className="flex-1 flex flex-col w-full md:w-auto">
         {/* Header */}
         <div className="bg-[#1f1f1f] border-b border-[#454545] p-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             <Button variant="ghost" onClick={() => navigate('/')} className="p-2 rounded-full hover:bg-[#313131]">
               <ArrowLeft size={20} />
             </Button>
-            <Button onClick={() => setSidebarOpen(true)} size="icon" className="md:hidden"><Menu size={24} /></Button>
-            <h1 className="text-xl font-bold">База знаний</h1>
-            {selectedNote && (
-              <>
-                <Separator orientation="vertical" className="h-6" />
-                <div className="max-w-md overflow-hidden">
-                  <h2 className="text-lg font-semibold truncate" title={selectedNote.title}>{selectedNote.title}</h2>
-                </div>
-              </>
-            )}
+            {/* Кнопки Сохранить и Прикрепить */}
+            <Button onClick={handleSaveNote} disabled={isSaving} style={{padding: '5px', border: '2px solid #22c55e', background: 'transparent', marginLeft: '4px', marginRight: '4px'}}>
+              <img src="/save.png" alt="Сохранить" style={{width: '20px', height: '20px'}} />
+            </Button>
+            <Button onClick={() => fileInputRef.current?.click()} style={{padding: '5px', border: '2px solid #22c55e', background: 'transparent', marginLeft: '4px'}}>
+              <img src="/clip.png" alt="Прикрепить файл" style={{width: '20px', height: '20px'}} />
+            </Button>
+            <input ref={fileInputRef} type="file" multiple onChange={handleFileUpload} className="hidden" />
           </div>
         </div>
         {/* Tags */}
@@ -585,13 +583,7 @@ const Wiki: React.FC = () => {
         <div className="bg-[#1f1f1f] border-b border-[#454545] p-2 quill-toolbar-custom">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Button onClick={handleSaveNote} disabled={isSaving} size="lg" className="bg-green-600 hover:bg-green-700 text-base md:text-sm">
-                <img src="/save.png" alt="Сохранить" className="w-6 h-6 md:w-4 md:h-4" />
-              </Button>
-              <Button onClick={() => fileInputRef.current?.click()} size="lg" variant="outline" className="bg-[#262626] border border-[#313131] text-[#ccc] hover:bg-[#313131] text-base md:text-sm">
-                <img src="/clip.png" alt="Прикрепить файл" className="w-6 h-6 md:w-4 md:h-4" />
-              </Button>
-              <input ref={fileInputRef} type="file" multiple onChange={handleFileUpload} className="hidden" />
+              {/* Удалить отображение названия заметки из шапки main-content (selectedNote.title) */}
             </div>
           </div>
         </div>
