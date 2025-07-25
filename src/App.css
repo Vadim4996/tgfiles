@@ -269,3 +269,44 @@
 .ql-toolbar, .quill-toolbar-custom, .ql-toolbar.ql-snow {
   background: #888 !important;
 }
+
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+  .quill-toolbar-custom {
+    font-size: 1.1rem;
+    padding: 6px 2px !important;
+  }
+  .quill-editor-custom {
+    padding: 4px !important;
+  }
+  .attachment-bar {
+    padding: 0 2px !important;
+  }
+  .attachment-item {
+    min-width: 110px !important;
+    max-width: 130px !important;
+    font-size: 13px !important;
+    padding: 4px 2px !important;
+  }
+  .attachment-item .icon svg {
+    width: 28px !important;
+    height: 28px !important;
+  }
+  .attachment-item .filename {
+    font-size: 13px !important;
+  }
+  .attachment-item .text-xs {
+    font-size: 10px !important;
+  }
+  .ql-toolbar.ql-snow {
+    flex-wrap: wrap;
+    font-size: 15px;
+  }
+  .w-80 {
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+}

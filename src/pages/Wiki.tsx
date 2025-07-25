@@ -20,7 +20,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from '../components/ui/context-menu';
-import { ChevronRight, ChevronDown, FileText, Folder, Plus, Search, ArrowLeft } from 'lucide-react';
+import { ChevronRight, ChevronDown, FileText, Folder, Plus, Search, ArrowLeft, Menu } from 'lucide-react';
 
 interface Note {
   id: string;
@@ -64,6 +64,7 @@ const Wiki: React.FC = () => {
   const [attachments, setAttachments] = useState<Blob[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Quill editor configuration
   const quillModules = {
@@ -519,9 +520,14 @@ const Wiki: React.FC = () => {
   const safeNotes = Array.isArray(notes) ? notes : [];
 
   return (
-    <div className="flex h-screen min-h-screen bg-[#272727] text-[#ccc]">
-      {/* Sidebar */}
-      <div className="w-80 bg-[#1f1f1f] border-r border-[#313131] flex flex-col">
+    <div className="flex flex-col md:flex-row h-screen min-h-screen bg-[#272727] text-[#ccc]">
+      {/* Sidebar (offcanvas on mobile) */}
+      <div className={`fixed inset-0 z-30 bg-black bg-opacity-40 transition-opacity md:hidden ${sidebarOpen ? 'block' : 'hidden'}`} onClick={() => setSidebarOpen(false)} />
+      <div className={`fixed top-0 left-0 h-full w-4/5 max-w-xs bg-[#1f1f1f] border-r border-[#313131] z-40 transform transition-transform duration-300 md:static md:translate-x-0 md:w-80 md:block ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:h-auto`}>
+        <div className="p-4 border-b border-[#454545] flex items-center justify-between">
+          <h1 className="text-xl font-bold">База знаний</h1>
+          <Button onClick={() => setSidebarOpen(false)} size="icon" className="md:hidden"><Menu size={24} /></Button>
+        </div>
         {/* Header */}
         <div className="p-4 border-b border-[#454545]">
           <div className="flex items-center justify-between mb-4">
@@ -546,174 +552,148 @@ const Wiki: React.FC = () => {
         </ScrollArea>
       </div>
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col w-full md:w-auto">
         {/* Header */}
-        <div className="bg-[#1f1f1f] border-b border-[#454545] p-4">
+        <div className="bg-[#1f1f1f] border-b border-[#454545] p-4 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Button variant="ghost" onClick={() => navigate('/')} className="p-2 rounded-full hover:bg-[#313131]">
+              <ArrowLeft size={20} />
+            </Button>
+            <Button onClick={() => setSidebarOpen(true)} size="icon" className="md:hidden"><Menu size={24} /></Button>
+            <h1 className="text-xl font-bold">База знаний</h1>
+            {selectedNote && (
+              <>
+                <Separator orientation="vertical" className="h-6" />
+                <div className="max-w-md overflow-hidden">
+                  <h2 className="text-lg font-semibold truncate" title={selectedNote.title}>{selectedNote.title}</h2>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+        {/* Tags */}
+        {selectedNote?.attributes && selectedNote.attributes.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {selectedNote.attributes.map((attr, index) => (
+              <Badge key={index} variant="secondary" className="bg-blue-600 text-white">
+                {attr.name}: {attr.value}
+              </Badge>
+            ))}
+          </div>
+        )}
+        {/* Toolbar */}
+        <div className="bg-[#1f1f1f] border-b border-[#454545] p-2 quill-toolbar-custom">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                onClick={() => navigate('/')} 
-                className="p-2 rounded-full hover:bg-[#313131]"
-              >
-                <ArrowLeft size={20} />
+            <div className="flex items-center space-x-2">
+              <Button onClick={handleSaveNote} disabled={isSaving} size="lg" className="bg-green-600 hover:bg-green-700 text-base md:text-sm">
+                <img src="/save.png" alt="Сохранить" className="w-6 h-6 md:w-4 md:h-4" />
               </Button>
-              <div className="flex items-center space-x-4">
-                <h1 className="text-xl font-bold">База знаний</h1>
-                {selectedNote && (
-                  <>
-                    <Separator orientation="vertical" className="h-6" />
-                    <div className="max-w-md overflow-hidden">
-                      <h2 className="text-lg font-semibold truncate" title={selectedNote.title}>
-                        {selectedNote.title}
-                      </h2>
-                    </div>
-                  </>
-                )}
-              </div>
+              <Button onClick={() => fileInputRef.current?.click()} size="lg" variant="outline" className="bg-[#262626] border border-[#313131] text-[#ccc] hover:bg-[#313131] text-base md:text-sm">
+                <img src="/clip.png" alt="Прикрепить файл" className="w-6 h-6 md:w-4 md:h-4" />
+              </Button>
+              <input ref={fileInputRef} type="file" multiple onChange={handleFileUpload} className="hidden" />
             </div>
           </div>
-          {/* Tags */}
-          {selectedNote?.attributes && selectedNote.attributes.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-2">
-              {selectedNote.attributes.map((attr, index) => (
-                <Badge key={index} variant="secondary" className="bg-blue-600 text-white">
-                  {attr.name}: {attr.value}
-                </Badge>
-              ))}
-            </div>
-          )}
         </div>
-        {selectedNote ? (
-          <>
-            <div className="flex-1 flex flex-col">
-              {/* Toolbar */}
-              <div className="bg-[#1f1f1f] border-b border-[#454545] p-2 quill-toolbar-custom">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      onClick={handleSaveNote}
-                      disabled={isSaving}
-                      size="sm"
-                      className="bg-green-600 hover:bg-green-700"
+        {/* Editor */}
+        <div className="flex-1 p-2 md:p-4 bg-[#262626] text-[#ccc] quill-editor-custom">
+          <div className="h-full flex flex-col">
+            <Input value={noteTitle} onChange={e => setNoteTitle(e.target.value)} placeholder="Название заметки" className="mb-2 md:mb-4 bg-[#1f1f1f] border-[#313131] text-[#fff] font-bold text-base md:text-lg" />
+            <ReactQuill theme="snow" value={noteContent} onChange={setNoteContent} modules={quillModules} formats={quillFormats} className="flex-1 quill-main quill-container-custom" style={{ minHeight: '200px', height: 'auto', width: '100%' }} />
+          </div>
+        </div>
+        {/* Вложения */}
+        {Array.isArray(attachments) && attachments.length > 0 && (
+          <div className="attachment-bar w-full bg-[#23272e] rounded-b-lg border-t-0 mt-0 p-0">
+            <h3 className="text-base md:text-lg font-semibold mb-1 md:mb-2 ml-1">Вложения</h3>
+            <div className="flex flex-row flex-nowrap overflow-x-auto gap-2 md:gap-4 px-2">
+              {attachments.map((blob) => {
+                const mime = typeof blob.mime_type === 'string' ? blob.mime_type : '';
+                const name = typeof blob.filename === 'string' ? blob.filename : (typeof blob.name === 'string' ? blob.name : 'Без имени');
+                // Иконка по формату
+                let icon = null;
+                if (mime.includes('pdf') || /\.pdf$/i.test(name)) {
+                  icon = (
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#e53935"/><text x="50%" y="60%" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="bold" fontFamily="Arial">PDF</text></svg>
+                  );
+                } else if (mime.includes('word') || /\.(docx?|rtf)$/i.test(name)) {
+                  icon = (
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#1976d2"/><text x="50%" y="60%" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="bold" fontFamily="Arial">DOC</text></svg>
+                  );
+                } else if (mime.includes('excel') || /\.(xlsx?|csv)$/i.test(name)) {
+                  icon = (
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#388e3c"/><text x="50%" y="60%" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="bold" fontFamily="Arial">XLS</text></svg>
+                  );
+                } else if (mime.includes('powerpoint') || /\.(pptx?)$/i.test(name)) {
+                  icon = (
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#f57c00"/><text x="50%" y="60%" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="bold" fontFamily="Arial">PPT</text></svg>
+                  );
+                } else if (mime.startsWith('image/') || /\.(jpe?g|png|gif|bmp|svg|webp)$/i.test(name)) {
+                  icon = (
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#90caf9"/><text x="50%" y="60%" textAnchor="middle" fill="#1565c0" fontSize="13" fontWeight="bold" fontFamily="Arial">IMG</text></svg>
+                  );
+                } else if (mime.startsWith('video/') || /\.(mp4|avi|mov|wmv|mkv|webm)$/i.test(name)) {
+                  icon = (
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#7e57c2"/><text x="50%" y="60%" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="bold" fontFamily="Arial">VID</text></svg>
+                  );
+                } else if (mime.startsWith('audio/') || /\.(mp3|wav|ogg|flac|aac)$/i.test(name)) {
+                  icon = (
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#26a69a"/><text x="50%" y="60%" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="bold" fontFamily="Arial">AUD</text></svg>
+                  );
+                } else if (mime.includes('zip') || /\.(zip|rar|7z|tar|gz)$/i.test(name)) {
+                  icon = (
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#8d6e63"/><text x="50%" y="60%" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="bold" fontFamily="Arial">ZIP</text></svg>
+                  );
+                } else if (mime.startsWith('text/') || /\.(txt|md|csv|log)$/i.test(name)) {
+                  icon = (
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#bdbdbd"/><text x="50%" y="60%" textAnchor="middle" fill="#333" fontSize="13" fontWeight="bold" fontFamily="Arial">TXT</text></svg>
+                  );
+                } else {
+                  icon = (
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#607d8b"/><text x="50%" y="60%" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="bold" fontFamily="Arial">FILE</text></svg>
+                  );
+                }
+                // Предпросмотр
+                let preview = null;
+                if (mime.startsWith('image/')) {
+                  preview = (
+                    <AttachmentPreview blobId={blob.id} mime={mime} token={token} filename={name} />
+                  );
+                } else if (mime.includes('pdf')) {
+                  preview = (
+                    <AttachmentPreview blobId={blob.id} mime={mime} token={token} filename={name} isPdf />
+                  );
+                } else if (mime.startsWith('text/')) {
+                  preview = (
+                    <AttachmentPreview blobId={blob.id} mime={mime} token={token} filename={name} isText />
+                  );
+                }
+                return (
+                  <div
+                    key={blob.id}
+                    className="attachment-item group"
+                  >
+                    <div className="icon">{icon}</div>
+                    <div
+                      className="filename cursor-pointer hover:text-blue-400"
+                      title={name}
+                      onClick={() => handleAttachmentClick(blob)}
+                      style={{textDecoration: 'underline'}}
                     >
-                      <img src="/save.png" alt="Сохранить" className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      onClick={() => fileInputRef.current?.click()}
-                      size="sm"
-                      variant="outline"
-                      className="bg-[#262626] border border-[#313131] text-[#ccc] hover:bg-[#313131]"
-                    >
-                      <img src="/clip.png" alt="Прикрепить файл" className="w-4 h-4" />
-                    </Button>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      multiple
-                      onChange={handleFileUpload}
-                      className="hidden"
-                    />
+                      {name}
+                    </div>
+                    {preview}
+                    <div
+                      className="text-xs mt-1 cursor-pointer text-red-500 hover:underline"
+                      style={{fontSize: '11px'}}
+                      onClick={() => {
+                        if (window.confirm('Удалить вложение безвозвратно?')) handleDeleteAttachment(blob.id);
+                      }}
+                    >Удалить</div>
                   </div>
-                </div>
-              </div>
-              {/* Editor */}
-              <div className="flex-1 p-4 bg-[#262626] text-[#ccc] quill-editor-custom">
-                <div className="h-full flex flex-col">
-                  <Input
-                    value={noteTitle}
-                    onChange={e => setNoteTitle(e.target.value)}
-                    placeholder="Название заметки"
-                    className="mb-4 bg-[#1f1f1f] border-[#313131] text-[#fff] font-bold text-lg"
-                  />
-                  <ReactQuill
-                    theme="snow"
-                    value={noteContent}
-                    onChange={setNoteContent}
-                    modules={quillModules}
-                    formats={quillFormats}
-                    className="flex-1 quill-main quill-container-custom"
-                    style={{ height: '300px' }}
-                  />
-                </div>
-              </div>
+                );
+              })}
             </div>
-            {/* Вложения — строго под рамкой редактора */}
-            {Array.isArray(attachments) && attachments.length > 0 && (
-              <div
-                className="attachment-bar"
-                style={{
-                  width: '100%',
-                  background: '#23272e',
-                  borderRadius: '0 0 0.375rem 0.375rem',
-                  borderTop: 'none',
-                  marginTop: 0,
-                  padding: 0
-                }}
-              >
-                <h3 className="text-lg font-semibold mb-2" style={{margin: '8px 0 8px 2px'}}>Вложения</h3>
-                <div
-                  className="attachment-grid"
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    flexWrap: 'nowrap',
-                    overflowX: 'auto',
-                    gap: '1.2rem',
-                    width: '100%',
-                    margin: 0,
-                    padding: 0
-                  }}
-                >
-                  {attachments.map((blob) => {
-                    const mime = typeof blob.mime_type === 'string' ? blob.mime_type : '';
-                    const name = typeof blob.filename === 'string' ? blob.filename : (typeof blob.name === 'string' ? blob.name : 'Без имени');
-                    let icon = '📎';
-                    if (mime.startsWith('image/')) icon = '🖼️';
-                    else if (mime.startsWith('video/')) icon = '🎥';
-                    else if (mime.startsWith('audio/')) icon = '🎵';
-                    else if (mime.includes('pdf')) icon = '📄';
-                    else if (mime.includes('text')) icon = '📝';
-                    // Предпросмотр
-                    let preview = null;
-                    if (mime.startsWith('image/')) {
-                      preview = (
-                        <AttachmentPreview blobId={blob.id} mime={mime} token={token} filename={name} />
-                      );
-                    } else if (mime.includes('pdf')) {
-                      preview = (
-                        <AttachmentPreview blobId={blob.id} mime={mime} token={token} filename={name} isPdf />
-                      );
-                    } else if (mime.startsWith('text/')) {
-                      preview = (
-                        <AttachmentPreview blobId={blob.id} mime={mime} token={token} filename={name} isText />
-                      );
-                    }
-                    return (
-                      <div
-                        key={blob.id}
-                        className="attachment-item group"
-                      >
-                        <div className="icon">{icon}</div>
-                        <div
-                          className="filename cursor-pointer hover:text-blue-400"
-                          title={name}
-                          onClick={() => handleAttachmentClick(blob)}
-                          style={{textDecoration: 'underline'}}
-                        >
-                          {name}
-                        </div>
-                        {preview}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center bg-[#262626] text-[#ccc]">
-            <span>Выберите заметку для просмотра или создайте новую.</span>
           </div>
         )}
       </div>
