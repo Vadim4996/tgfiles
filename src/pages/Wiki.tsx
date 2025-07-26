@@ -526,16 +526,17 @@ const Wiki: React.FC = () => {
       <div className={`fixed top-0 left-0 h-full w-4/5 max-w-xs bg-[#1f1f1f] border-r border-[#313131] z-40 transform transition-transform duration-300 md:static md:translate-x-0 md:w-80 md:block ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:h-auto`}>
         <div className="p-4 border-b border-[#454545] flex items-center justify-between">
           <h1 className="text-xl font-bold">База знаний</h1>
-          <Button onClick={() => setSidebarOpen(false)} size="icon" className="md:hidden"><Menu size={24} /></Button>
-        </div>
-        {/* Header */}
-        <div className="p-4 border-b border-[#454545]">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-bold">База знаний</h1>
+          <div className="flex items-center space-x-2">
             <Button onClick={handleCreateNote} size="sm" className="bg-[#262626] border border-[#313131] text-[#ccc] hover:bg-[#313131] shadow-lg">
               <Plus size={16} />
             </Button>
+            <Button onClick={() => setSidebarOpen(false)} size="icon" className="md:hidden bg-[#262626] border border-[#313131] text-[#ccc] hover:bg-[#313131] shadow-lg">
+              <Menu size={24} />
+            </Button>
           </div>
+        </div>
+        {/* Header */}
+        <div className="p-4 border-b border-[#454545]">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#ccc]" size={16} />
             <Input
@@ -560,14 +561,16 @@ const Wiki: React.FC = () => {
               <ArrowLeft size={20} />
             </Button>
             {/* Кнопка вызова сайдбара (Menu) только на мобильных */}
-            <Button onClick={() => setSidebarOpen(true)} size="icon" className="md:hidden p-2 rounded-full hover:bg-[#313131]">
+            <Button onClick={() => setSidebarOpen(true)} size="icon" className="md:hidden bg-[#262626] border border-[#313131] text-[#ccc] hover:bg-[#313131] shadow-lg">
               <Menu size={24} />
             </Button>
-            {/* Кнопки Сохранить и Прикрепить */}
-            <Button onClick={handleSaveNote} disabled={isSaving} style={{padding: '5px', border: '2px solid #22c55e', background: 'transparent', marginLeft: '8px', marginRight: '4px'}}>
+          </div>
+          {/* Кнопки Сохранить и Прикрепить справа */}
+          <div className="flex items-center space-x-2">
+            <Button onClick={handleSaveNote} disabled={isSaving} style={{padding: '5px', border: '2px solid #22c55e', background: 'transparent'}}>
               <img src="/save.png" alt="Сохранить" style={{width: '20px', height: '20px'}} />
             </Button>
-            <Button onClick={() => fileInputRef.current?.click()} style={{padding: '5px', border: '2px solid #22c55e', background: 'transparent', marginLeft: '4px'}}>
+            <Button onClick={() => fileInputRef.current?.click()} style={{padding: '5px', border: '2px solid #22c55e', background: 'transparent'}}>
               <img src="/clip.png" alt="Прикрепить файл" style={{width: '20px', height: '20px'}} />
             </Button>
             <input ref={fileInputRef} type="file" multiple onChange={handleFileUpload} className="hidden" />
