@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+// import 'react-quill/dist/quill.snow.css'; // УДАЛЯЕМ СТАНДАРТНЫЙ CSS QUILL
 import { useAuth } from '../utils/use-auth';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
