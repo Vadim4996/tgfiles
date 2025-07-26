@@ -229,15 +229,16 @@
 .ql-toolbar button,
 .ql-toolbar.ql-snow button,
 .quill-toolbar-custom button {
-  color: #ffffff !important;
-  fill: #ffffff !important;
-  stroke: #ffffff !important;
-  background: #ffffff !important;
-  border: 1px solid #ffffff !important;
+  color: #827574 !important;
+  fill: #827574 !important;
+  stroke: #827574 !important;
+  background: transparent !important;
+  border: none !important;
   border-radius: 3px !important;
-  margin: 1px !important;
+  margin: 0 !important;
   padding: 3px 5px !important;
   transition: all 0.2s !important;
+  box-shadow: inset 0 0 0 1px #ffffff !important;
 }
 
 .ql-toolbar button:hover,
@@ -246,8 +247,8 @@
   color: #827574 !important;
   fill: #827574 !important;
   stroke: #827574 !important;
-  background: #ffffff !important;
-  border-color: #ffffff !important;
+  background: transparent !important;
+  box-shadow: inset 0 0 0 1px #ffffff !important;
 }
 
 .ql-toolbar button.ql-active,
@@ -256,8 +257,8 @@
   color: #827574 !important;
   fill: #827574 !important;
   stroke: #827574 !important;
-  background: #ffffff !important;
-  border-color: #ffffff !important;
+  background: transparent !important;
+  box-shadow: inset 0 0 0 1px #ffffff !important;
 }
 
 /* PICKER ЭЛЕМЕНТЫ */
@@ -299,9 +300,9 @@
 .ql-toolbar .ql-picker-label,
 .ql-toolbar.ql-snow .ql-picker-label,
 .quill-toolbar-custom .ql-picker-label {
-  color: #ffffff !important;
-  fill: #ffffff !important;
-  stroke: #ffffff !important;
+  color: #827574 !important;
+  fill: #827574 !important;
+  stroke: #827574 !important;
   background: transparent !important;
   font-size: 11px !important;
   font-weight: 400 !important;
@@ -371,9 +372,9 @@
 .ql-toolbar svg,
 .ql-toolbar.ql-snow svg,
 .quill-toolbar-custom svg {
-  color: #ffffff !important;
-  fill: #ffffff !important;
-  stroke: #ffffff !important;
+  color: #827574 !important;
+  fill: #827574 !important;
+  stroke: #827574 !important;
 }
 
 .ql-toolbar .ql-stroke,
