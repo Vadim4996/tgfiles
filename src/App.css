@@ -414,6 +414,19 @@
   fill: #ffffff !important;
 }
 
+/* ИСКЛЮЧЕНИЯ ДЛЯ ЭЛЕМЕНТОВ ВЫПАДАЮЩЕГО СПИСКА */
+.ql-toolbar .ql-picker-options .ql-stroke,
+.ql-toolbar.ql-snow .ql-picker-options .ql-stroke,
+.quill-toolbar-custom .ql-picker-options .ql-stroke {
+  stroke: #333333 !important;
+}
+
+.ql-toolbar .ql-picker-options .ql-fill,
+.ql-toolbar.ql-snow .ql-picker-options .ql-fill,
+.quill-toolbar-custom .ql-picker-options .ql-fill {
+  fill: #333333 !important;
+}
+
 /* ЦВЕТОВЫЕ ПАЛИТРЫ */
 .ql-toolbar .ql-color .ql-picker-options,
 .ql-toolbar .ql-background .ql-picker-options,
