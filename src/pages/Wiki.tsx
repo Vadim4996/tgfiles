@@ -559,8 +559,12 @@ const Wiki: React.FC = () => {
             <Button variant="ghost" onClick={() => navigate('/')} className="p-2 rounded-full hover:bg-[#313131]">
               <ArrowLeft size={20} />
             </Button>
+            {/* Кнопка вызова сайдбара (Menu) только на мобильных */}
+            <Button onClick={() => setSidebarOpen(true)} size="icon" className="md:hidden p-2 rounded-full hover:bg-[#313131]">
+              <Menu size={24} />
+            </Button>
             {/* Кнопки Сохранить и Прикрепить */}
-            <Button onClick={handleSaveNote} disabled={isSaving} style={{padding: '5px', border: '2px solid #22c55e', background: 'transparent', marginLeft: '4px', marginRight: '4px'}}>
+            <Button onClick={handleSaveNote} disabled={isSaving} style={{padding: '5px', border: '2px solid #22c55e', background: 'transparent', marginLeft: '8px', marginRight: '4px'}}>
               <img src="/save.png" alt="Сохранить" style={{width: '20px', height: '20px'}} />
             </Button>
             <Button onClick={() => fileInputRef.current?.click()} style={{padding: '5px', border: '2px solid #22c55e', background: 'transparent', marginLeft: '4px'}}>
