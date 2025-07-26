@@ -238,6 +238,9 @@ const Wiki: React.FC = () => {
           htmlEl.style.borderRadius = '3px';
           htmlEl.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
           htmlEl.style.padding = '4px';
+          htmlEl.style.left = '0';
+          htmlEl.style.transform = 'none';
+          htmlEl.style.position = 'absolute';
           
           // Восстанавливаем цвета для цветовых квадратиков
           htmlEl.querySelectorAll('.ql-picker-item').forEach(item => {
