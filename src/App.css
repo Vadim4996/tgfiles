@@ -225,6 +225,16 @@
   border-color: #a8a8a8 !important;
 }
 
+/* ИСКЛЮЧЕНИЕ ДЛЯ ЭЛЕМЕНТОВ ВЫПАДАЮЩЕГО СПИСКА */
+.ql-toolbar .ql-picker-options *,
+.ql-toolbar.ql-snow .ql-picker-options *,
+.quill-toolbar-custom .ql-picker-options * {
+  color: #333333 !important;
+  fill: #333333 !important;
+  stroke: #333333 !important;
+  background: #ffffff !important;
+}
+
 /* КНОПКИ ТУЛБАРА */
 .ql-toolbar button,
 .ql-toolbar.ql-snow button,
@@ -493,6 +503,14 @@
 }
 
 /* --- END --- */
+
+/* Цвет текста и фон для элементов выпадающего списка Quill */
+.ql-toolbar .ql-picker-options .ql-picker-item,
+.ql-toolbar.ql-snow .ql-picker-options .ql-picker-item,
+.quill-toolbar-custom .ql-picker-options .ql-picker-item {
+  color: #333333 !important;
+  background: #ffffff !important;
+}
 
 @media (max-width: 768px) {
   body {
