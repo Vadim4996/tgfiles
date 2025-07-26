@@ -66,16 +66,16 @@ const Wiki: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Quill editor configuration
+  // Quill editor configuration - разбиваем все группы на отдельные кнопки
   const quillModules = {
     toolbar: [
-      [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      [{ 'color': [] }, { 'background': [] }],
-      [{ 'align': [] }],
-      ['link', 'image', 'code-block'],
-      ['clean']
+      'header',
+      'bold', 'italic', 'underline', 'strike',
+      'list', 'bullet',
+      'color', 'background',
+      'align',
+      'link', 'image', 'code-block',
+      'clean'
     ],
   };
 

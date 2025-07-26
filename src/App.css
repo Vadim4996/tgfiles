@@ -152,29 +152,47 @@
   box-shadow: none !important;
 }
 
-/* Тулбар Quill: flex-контейнер, центрирование, равномерное распределение */
-.ql-toolbar, .ql-toolbar.ql-snow, .quill-toolbar-custom {
+/* МАКСИМАЛЬНО ЖЁСТКИЕ СТИЛИ ДЛЯ ТУЛБАРА QUILL */
+.ql-toolbar.ql-snow,
+.ql-toolbar,
+.quill-toolbar-custom {
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
   width: 100% !important;
-  flex-wrap: wrap !important;
   padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
 }
 
-/* Группы кнопок (span) — равномерное распределение */
-.ql-toolbar > span, .ql-toolbar.ql-snow > span, .quill-toolbar-custom > span {
+.ql-toolbar.ql-snow > span,
+.ql-toolbar > span,
+.quill-toolbar-custom > span {
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
   flex: 1 !important;
-  gap: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
-/* Кнопки тулбара: только убираем margin, размер не меняем */
-.ql-toolbar button, .ql-toolbar.ql-snow button, .quill-toolbar-custom button {
+.ql-toolbar.ql-snow button,
+.ql-toolbar button,
+.quill-toolbar-custom button {
   margin: 0 !important;
-  /* Размер кнопок не меняем! */
+  padding: 3px 5px !important;
+  border: none !important;
+  background: transparent !important;
+  color: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  vertical-align: middle !important;
+  cursor: pointer !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: auto !important;
+  max-width: none !important;
 }
 
 @media (max-width: 768px) {
@@ -207,10 +225,6 @@
   }
   .attachment-item .text-xs {
     font-size: 10px !important;
-  }
-  .ql-toolbar.ql-snow {
-    flex-wrap: wrap;
-    font-size: 15px;
   }
   .w-80 {
     width: 100vw !important;
