@@ -103,68 +103,104 @@ const Wiki: React.FC = () => {
   useEffect(() => {
     const toolbar = document.querySelector('.ql-toolbar.ql-snow');
     if (toolbar) {
+      // Устанавливаем белый фон для тулбара
+      toolbar.style.background = '#ffffff';
+      toolbar.style.color = '#333333';
+      toolbar.style.border = '1px solid #18181b';
+      toolbar.style.borderRadius = '0.375rem 0.375rem 0 0';
+      
+      // Все кнопки и элементы - тёмные на белом
       toolbar.querySelectorAll('button, .ql-picker, .ql-picker-label, .ql-picker-item').forEach(el => {
         const htmlEl = el as HTMLElement;
-        htmlEl.style.background = '#313131';
-        htmlEl.style.color = '#fff';
-        htmlEl.style.fill = '#fff';
-        htmlEl.style.stroke = '#fff';
-        htmlEl.style.border = 'none';
+        htmlEl.style.background = 'transparent';
+        htmlEl.style.color = '#333333';
+        htmlEl.style.fill = '#333333';
+        htmlEl.style.stroke = '#333333';
+        htmlEl.style.border = '1px solid #cccccc';
+        htmlEl.style.borderRadius = '3px';
+        htmlEl.style.margin = '1px';
+        htmlEl.style.padding = '3px 5px';
       });
+      
+      // Все SVG иконки - тёмные
       toolbar.querySelectorAll('svg').forEach(svg => {
         const svgEl = svg as SVGElement;
-        svgEl.style.color = '#fff';
-        svgEl.style.fill = '#fff';
-        svgEl.style.stroke = '#fff';
-        svgEl.setAttribute('fill', '#fff');
-        svgEl.setAttribute('stroke', '#fff');
+        svgEl.style.color = '#333333';
+        svgEl.style.fill = '#333333';
+        svgEl.style.stroke = '#333333';
+        svgEl.setAttribute('fill', '#333333');
+        svgEl.setAttribute('stroke', '#333333');
       });
-      // Hover и активные — через mouseover/mouseout
+      
+      // Hover эффекты
       toolbar.querySelectorAll('button, .ql-picker-item, .ql-picker-label').forEach(el => {
         const htmlEl = el as HTMLElement;
         htmlEl.addEventListener('mouseover', () => {
-          htmlEl.style.background = '#444';
-          htmlEl.style.color = '#60a5fa';
-          htmlEl.style.fill = '#60a5fa';
-          htmlEl.style.stroke = '#60a5fa';
+          htmlEl.style.background = '#f0f0f0';
+          htmlEl.style.color = '#000000';
+          htmlEl.style.fill = '#000000';
+          htmlEl.style.stroke = '#000000';
+          htmlEl.style.borderColor = '#999999';
           htmlEl.querySelectorAll('svg').forEach(svg => {
             const svgEl = svg as SVGElement;
-            svgEl.style.color = '#60a5fa';
-            svgEl.style.fill = '#60a5fa';
-            svgEl.style.stroke = '#60a5fa';
-            svgEl.setAttribute('fill', '#60a5fa');
-            svgEl.setAttribute('stroke', '#60a5fa');
+            svgEl.style.color = '#000000';
+            svgEl.style.fill = '#000000';
+            svgEl.style.stroke = '#000000';
+            svgEl.setAttribute('fill', '#000000');
+            svgEl.setAttribute('stroke', '#000000');
           });
         });
         htmlEl.addEventListener('mouseout', () => {
-          htmlEl.style.background = '#313131';
-          htmlEl.style.color = '#fff';
-          htmlEl.style.fill = '#fff';
-          htmlEl.style.stroke = '#fff';
+          htmlEl.style.background = 'transparent';
+          htmlEl.style.color = '#333333';
+          htmlEl.style.fill = '#333333';
+          htmlEl.style.stroke = '#333333';
+          htmlEl.style.borderColor = '#cccccc';
           htmlEl.querySelectorAll('svg').forEach(svg => {
             const svgEl = svg as SVGElement;
-            svgEl.style.color = '#fff';
-            svgEl.style.fill = '#fff';
-            svgEl.style.stroke = '#fff';
-            svgEl.setAttribute('fill', '#fff');
-            svgEl.setAttribute('stroke', '#fff');
+            svgEl.style.color = '#333333';
+            svgEl.style.fill = '#333333';
+            svgEl.style.stroke = '#333333';
+            svgEl.setAttribute('fill', '#333333');
+            svgEl.setAttribute('stroke', '#333333');
           });
         });
       });
+      
+      // Активные элементы
       toolbar.querySelectorAll('button.ql-active, .ql-picker-item.ql-selected').forEach(el => {
         const htmlEl = el as HTMLElement;
-        htmlEl.style.background = '#313131';
-        htmlEl.style.color = '#60a5fa';
-        htmlEl.style.fill = '#60a5fa';
-        htmlEl.style.stroke = '#60a5fa';
+        htmlEl.style.background = '#e0e0e0';
+        htmlEl.style.color = '#000000';
+        htmlEl.style.fill = '#000000';
+        htmlEl.style.stroke = '#000000';
+        htmlEl.style.borderColor = '#666666';
         htmlEl.querySelectorAll('svg').forEach(svg => {
           const svgEl = svg as SVGElement;
-          svgEl.style.color = '#60a5fa';
-          svgEl.style.fill = '#60a5fa';
-          svgEl.style.stroke = '#60a5fa';
-          svgEl.setAttribute('fill', '#60a5fa');
-          svgEl.setAttribute('stroke', '#60a5fa');
+          svgEl.style.color = '#000000';
+          svgEl.style.fill = '#000000';
+          svgEl.style.stroke = '#000000';
+          svgEl.setAttribute('fill', '#000000');
+          svgEl.setAttribute('stroke', '#000000');
         });
+      });
+      
+      // Выпадающие меню
+      toolbar.querySelectorAll('.ql-picker-options').forEach(el => {
+        const htmlEl = el as HTMLElement;
+        htmlEl.style.background = '#ffffff';
+        htmlEl.style.border = '1px solid #cccccc';
+        htmlEl.style.borderRadius = '3px';
+        htmlEl.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+      });
+      
+      // Цветовые палитры
+      toolbar.querySelectorAll('.ql-color .ql-picker-options, .ql-background .ql-picker-options').forEach(el => {
+        const htmlEl = el as HTMLElement;
+        htmlEl.style.background = '#ffffff';
+        htmlEl.style.border = '1px solid #cccccc';
+        htmlEl.style.borderRadius = '3px';
+        htmlEl.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
       });
     }
   }, []);
