@@ -155,25 +155,26 @@
 /* Тулбар Quill: flex-контейнер, центрирование, равномерное распределение */
 .ql-toolbar, .ql-toolbar.ql-snow, .quill-toolbar-custom {
   display: flex !important;
-  justify-content: center !important;
+  justify-content: space-between !important;
   align-items: center !important;
-  gap: 0 !important;
   width: 100% !important;
+  flex-wrap: wrap !important;
+  padding: 0 !important;
 }
 
-/* Кнопки тулбара: убираем margin, flex-grow */
-.ql-toolbar button, .ql-toolbar.ql-snow button, .quill-toolbar-custom button {
-  margin: 0 !important;
-  flex-grow: 1 !important;
-  flex-basis: 0 !important;
-}
-
-/* Группы кнопок (если есть) распределяем по ширине */
+/* Группы кнопок (span) — равномерное распределение */
 .ql-toolbar > span, .ql-toolbar.ql-snow > span, .quill-toolbar-custom > span {
   display: flex !important;
-  flex-grow: 1 !important;
   justify-content: center !important;
+  align-items: center !important;
+  flex: 1 !important;
   gap: 0 !important;
+}
+
+/* Кнопки тулбара: только убираем margin, размер не меняем */
+.ql-toolbar button, .ql-toolbar.ql-snow button, .quill-toolbar-custom button {
+  margin: 0 !important;
+  /* Размер кнопок не меняем! */
 }
 
 @media (max-width: 768px) {
