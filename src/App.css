@@ -233,7 +233,7 @@
   fill: #ffffff !important;
   stroke: #ffffff !important;
   background: transparent !important;
-  border: 1px solid #a8a8a8 !important;
+  border: 1px solid #ffffff !important;
   border-radius: 3px !important;
   margin: 1px !important;
   padding: 3px 5px !important;
@@ -243,21 +243,21 @@
 .ql-toolbar button:hover,
 .ql-toolbar.ql-snow button:hover,
 .quill-toolbar-custom button:hover {
-  color: #ffffff !important;
-  fill: #ffffff !important;
-  stroke: #ffffff !important;
-  background: #6b5d5c !important;
-  border-color: #8a7c7b !important;
+  color: #827574 !important;
+  fill: #827574 !important;
+  stroke: #827574 !important;
+  background: #ffffff !important;
+  border-color: #ffffff !important;
 }
 
 .ql-toolbar button.ql-active,
 .ql-toolbar.ql-snow button.ql-active,
 .quill-toolbar-custom button.ql-active {
-  color: #ffffff !important;
-  fill: #ffffff !important;
-  stroke: #ffffff !important;
-  background: #5a4c4b !important;
-  border-color: #7a6c6b !important;
+  color: #827574 !important;
+  fill: #827574 !important;
+  stroke: #827574 !important;
+  background: #ffffff !important;
+  border-color: #ffffff !important;
 }
 
 /* PICKER ЭЛЕМЕНТЫ */
@@ -268,7 +268,7 @@
   fill: #ffffff !important;
   stroke: #ffffff !important;
   background: transparent !important;
-  border: 1px solid #a8a8a8 !important;
+  border: 1px solid #ffffff !important;
   border-radius: 3px !important;
   margin: 1px !important;
   padding: 3px 5px !important;
