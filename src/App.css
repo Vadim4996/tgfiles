@@ -443,6 +443,26 @@
   background: #08bf76 !important;
 }
 
+/* МАКСИМАЛЬНО ЖЁСТКОЕ ПЕРЕОПРЕДЕЛЕНИЕ ДЛЯ ВСЕХ КНОПОК И ВЫПАДАЮЩИХ МЕНЮ QUILL */
+.ql-toolbar button,
+.ql-toolbar.ql-snow button,
+.quill-toolbar-custom button,
+.ql-toolbar .ql-picker-options,
+.ql-toolbar.ql-snow .ql-picker-options,
+.quill-toolbar-custom .ql-picker-options,
+.ql-toolbar .ql-picker-item,
+.ql-toolbar.ql-snow .ql-picker-item,
+.quill-toolbar-custom .ql-picker-item,
+.ql-toolbar .ql-picker-item:hover,
+.ql-toolbar.ql-snow .ql-picker-item:hover,
+.quill-toolbar-custom .ql-picker-item:hover,
+.ql-toolbar .ql-picker-item.ql-selected,
+.ql-toolbar.ql-snow .ql-picker-item.ql-selected,
+.quill-toolbar-custom .ql-picker-item.ql-selected {
+  background: #08bf76 !important;
+  box-shadow: none !important;
+}
+
 @media (max-width: 768px) {
   body {
     overflow-x: hidden;
