@@ -101,7 +101,7 @@ const Wiki: React.FC = () => {
   }, [noteId]);
 
   useEffect(() => {
-    const toolbar = document.querySelector('.ql-toolbar.ql-snow');
+    const toolbar = document.querySelector('.ql-toolbar.ql-snow') as HTMLElement;
     if (toolbar) {
       // Устанавливаем белый фон для тулбара
       toolbar.style.background = '#ffffff';
@@ -111,96 +111,137 @@ const Wiki: React.FC = () => {
       
       // Все кнопки и элементы - тёмные на белом
       toolbar.querySelectorAll('button, .ql-picker, .ql-picker-label, .ql-picker-item').forEach(el => {
-        const htmlEl = el as HTMLElement;
-        htmlEl.style.background = 'transparent';
-        htmlEl.style.color = '#333333';
-        htmlEl.style.fill = '#333333';
-        htmlEl.style.stroke = '#333333';
-        htmlEl.style.border = '1px solid #cccccc';
-        htmlEl.style.borderRadius = '3px';
-        htmlEl.style.margin = '1px';
-        htmlEl.style.padding = '3px 5px';
-      });
-      
-      // Все SVG иконки - тёмные
-      toolbar.querySelectorAll('svg').forEach(svg => {
-        const svgEl = svg as SVGElement;
-        svgEl.style.color = '#333333';
-        svgEl.style.fill = '#333333';
-        svgEl.style.stroke = '#333333';
-        svgEl.setAttribute('fill', '#333333');
-        svgEl.setAttribute('stroke', '#333333');
-      });
-      
-      // Hover эффекты
-      toolbar.querySelectorAll('button, .ql-picker-item, .ql-picker-label').forEach(el => {
-        const htmlEl = el as HTMLElement;
-        htmlEl.addEventListener('mouseover', () => {
-          htmlEl.style.background = '#f0f0f0';
-          htmlEl.style.color = '#000000';
-          htmlEl.style.fill = '#000000';
-          htmlEl.style.stroke = '#000000';
-          htmlEl.style.borderColor = '#999999';
-          htmlEl.querySelectorAll('svg').forEach(svg => {
-            const svgEl = svg as SVGElement;
-            svgEl.style.color = '#000000';
-            svgEl.style.fill = '#000000';
-            svgEl.style.stroke = '#000000';
-            svgEl.setAttribute('fill', '#000000');
-            svgEl.setAttribute('stroke', '#000000');
-          });
-        });
-        htmlEl.addEventListener('mouseout', () => {
+        if (el instanceof HTMLElement) {
+          const htmlEl = el;
           htmlEl.style.background = 'transparent';
           htmlEl.style.color = '#333333';
           htmlEl.style.fill = '#333333';
           htmlEl.style.stroke = '#333333';
-          htmlEl.style.borderColor = '#cccccc';
-          htmlEl.querySelectorAll('svg').forEach(svg => {
-            const svgEl = svg as SVGElement;
-            svgEl.style.color = '#333333';
-            svgEl.style.fill = '#333333';
-            svgEl.style.stroke = '#333333';
-            svgEl.setAttribute('fill', '#333333');
-            svgEl.setAttribute('stroke', '#333333');
+          htmlEl.style.border = '1px solid #cccccc';
+          htmlEl.style.borderRadius = '3px';
+          htmlEl.style.margin = '1px';
+          htmlEl.style.padding = '3px 5px';
+        }
+      });
+      
+      // Все SVG иконки - тёмные
+      toolbar.querySelectorAll('svg').forEach(svg => {
+        if (svg instanceof SVGElement) {
+          const svgEl = svg;
+          svgEl.style.color = '#333333';
+          svgEl.style.fill = '#333333';
+          svgEl.style.stroke = '#333333';
+          svgEl.setAttribute('fill', '#333333');
+          svgEl.setAttribute('stroke', '#333333');
+        }
+      });
+      
+      // Hover эффекты
+      toolbar.querySelectorAll('button, .ql-picker-item, .ql-picker-label').forEach(el => {
+        if (el instanceof HTMLElement) {
+          const htmlEl = el;
+          htmlEl.addEventListener('mouseover', () => {
+            htmlEl.style.background = '#f0f0f0';
+            htmlEl.style.color = '#000000';
+            htmlEl.style.fill = '#000000';
+            htmlEl.style.stroke = '#000000';
+            htmlEl.style.borderColor = '#999999';
+            htmlEl.querySelectorAll('svg').forEach(svg => {
+              if (svg instanceof SVGElement) {
+                const svgEl = svg;
+                svgEl.style.color = '#000000';
+                svgEl.style.fill = '#000000';
+                svgEl.style.stroke = '#000000';
+                svgEl.setAttribute('fill', '#000000');
+                svgEl.setAttribute('stroke', '#000000');
+              }
+            });
           });
-        });
+          htmlEl.addEventListener('mouseout', () => {
+            htmlEl.style.background = 'transparent';
+            htmlEl.style.color = '#333333';
+            htmlEl.style.fill = '#333333';
+            htmlEl.style.stroke = '#333333';
+            htmlEl.style.borderColor = '#cccccc';
+            htmlEl.querySelectorAll('svg').forEach(svg => {
+              if (svg instanceof SVGElement) {
+                const svgEl = svg;
+                svgEl.style.color = '#333333';
+                svgEl.style.fill = '#333333';
+                svgEl.style.stroke = '#333333';
+                svgEl.setAttribute('fill', '#333333');
+                svgEl.setAttribute('stroke', '#333333');
+              }
+            });
+          });
+        }
       });
       
       // Активные элементы
       toolbar.querySelectorAll('button.ql-active, .ql-picker-item.ql-selected').forEach(el => {
-        const htmlEl = el as HTMLElement;
-        htmlEl.style.background = '#e0e0e0';
-        htmlEl.style.color = '#000000';
-        htmlEl.style.fill = '#000000';
-        htmlEl.style.stroke = '#000000';
-        htmlEl.style.borderColor = '#666666';
-        htmlEl.querySelectorAll('svg').forEach(svg => {
-          const svgEl = svg as SVGElement;
-          svgEl.style.color = '#000000';
-          svgEl.style.fill = '#000000';
-          svgEl.style.stroke = '#000000';
-          svgEl.setAttribute('fill', '#000000');
-          svgEl.setAttribute('stroke', '#000000');
-        });
+        if (el instanceof HTMLElement) {
+          const htmlEl = el;
+          htmlEl.style.background = '#e0e0e0';
+          htmlEl.style.color = '#000000';
+          htmlEl.style.fill = '#000000';
+          htmlEl.style.stroke = '#000000';
+          htmlEl.style.borderColor = '#666666';
+          htmlEl.querySelectorAll('svg').forEach(svg => {
+            if (svg instanceof SVGElement) {
+              const svgEl = svg;
+              svgEl.style.color = '#000000';
+              svgEl.style.fill = '#000000';
+              svgEl.style.stroke = '#000000';
+              svgEl.setAttribute('fill', '#000000');
+              svgEl.setAttribute('stroke', '#000000');
+            }
+          });
+        }
       });
       
       // Выпадающие меню
       toolbar.querySelectorAll('.ql-picker-options').forEach(el => {
-        const htmlEl = el as HTMLElement;
-        htmlEl.style.background = '#ffffff';
-        htmlEl.style.border = '1px solid #cccccc';
-        htmlEl.style.borderRadius = '3px';
-        htmlEl.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+        if (el instanceof HTMLElement) {
+          const htmlEl = el;
+          htmlEl.style.background = '#ffffff';
+          htmlEl.style.border = '1px solid #cccccc';
+          htmlEl.style.borderRadius = '3px';
+          htmlEl.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+        }
       });
       
       // Цветовые палитры
       toolbar.querySelectorAll('.ql-color .ql-picker-options, .ql-background .ql-picker-options').forEach(el => {
-        const htmlEl = el as HTMLElement;
-        htmlEl.style.background = '#ffffff';
-        htmlEl.style.border = '1px solid #cccccc';
-        htmlEl.style.borderRadius = '3px';
-        htmlEl.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+        if (el instanceof HTMLElement) {
+          const htmlEl = el;
+          htmlEl.style.background = '#ffffff';
+          htmlEl.style.border = '1px solid #cccccc';
+          htmlEl.style.borderRadius = '3px';
+          htmlEl.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+          htmlEl.style.padding = '4px';
+          
+          // Восстанавливаем цвета для цветовых квадратиков
+          htmlEl.querySelectorAll('.ql-picker-item').forEach(item => {
+            if (item instanceof HTMLElement) {
+              const itemEl = item;
+              const dataValue = itemEl.getAttribute('data-value');
+              
+              // Устанавливаем размеры
+              itemEl.style.width = '16px';
+              itemEl.style.height = '16px';
+              itemEl.style.display = 'inline-block';
+              itemEl.style.border = '1px solid #cccccc';
+              itemEl.style.borderRadius = '2px';
+              itemEl.style.margin = '1px';
+              
+              // Восстанавливаем оригинальные цвета
+              if (dataValue) {
+                itemEl.style.backgroundColor = dataValue;
+                itemEl.style.background = dataValue;
+              }
+            }
+          });
+        }
       });
     }
   }, []);

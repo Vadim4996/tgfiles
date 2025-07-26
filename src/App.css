@@ -353,18 +353,70 @@
   border: 1px solid #cccccc !important;
   border-radius: 3px !important;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+  padding: 4px !important;
 }
 
+/* ЦВЕТОВЫЕ КВАДРАТИКИ - ВОССТАНАВЛИВАЕМ ИХ ЦВЕТА */
 .ql-toolbar .ql-color .ql-picker-options .ql-picker-item,
 .ql-toolbar .ql-background .ql-picker-options .ql-picker-item,
 .ql-toolbar.ql-snow .ql-color .ql-picker-options .ql-picker-item,
 .ql-toolbar.ql-snow .ql-background .ql-picker-options .ql-picker-item,
 .quill-toolbar-custom .ql-color .ql-picker-options .ql-picker-item,
 .quill-toolbar-custom .ql-background .ql-picker-options .ql-picker-item {
-  background-color: transparent !important;
+  background-color: inherit !important;
   border: 1px solid #cccccc !important;
   border-radius: 2px !important;
   margin: 1px !important;
+  width: 16px !important;
+  height: 16px !important;
+  display: inline-block !important;
+}
+
+/* СПЕЦИАЛЬНО ДЛЯ КОНКРЕТНЫХ ЦВЕТОВ */
+.ql-toolbar .ql-color .ql-picker-options .ql-picker-item[data-value="red"],
+.ql-toolbar .ql-background .ql-picker-options .ql-picker-item[data-value="red"] {
+  background-color: #e60000 !important;
+}
+
+.ql-toolbar .ql-color .ql-picker-options .ql-picker-item[data-value="orange"],
+.ql-toolbar .ql-background .ql-picker-options .ql-picker-item[data-value="orange"] {
+  background-color: #f90 !important;
+}
+
+.ql-toolbar .ql-color .ql-picker-options .ql-picker-item[data-value="yellow"],
+.ql-toolbar .ql-background .ql-picker-options .ql-picker-item[data-value="yellow"] {
+  background-color: #ffff00 !important;
+}
+
+.ql-toolbar .ql-color .ql-picker-options .ql-picker-item[data-value="green"],
+.ql-toolbar .ql-background .ql-picker-options .ql-picker-item[data-value="green"] {
+  background-color: #008a00 !important;
+}
+
+.ql-toolbar .ql-color .ql-picker-options .ql-picker-item[data-value="blue"],
+.ql-toolbar .ql-background .ql-picker-options .ql-picker-item[data-value="blue"] {
+  background-color: #0066cc !important;
+}
+
+.ql-toolbar .ql-color .ql-picker-options .ql-picker-item[data-value="purple"],
+.ql-toolbar .ql-background .ql-picker-options .ql-picker-item[data-value="purple"] {
+  background-color: #9933ff !important;
+}
+
+.ql-toolbar .ql-color .ql-picker-options .ql-picker-item[data-value="brown"],
+.ql-toolbar .ql-background .ql-picker-options .ql-picker-item[data-value="brown"] {
+  background-color: #a64d79 !important;
+}
+
+.ql-toolbar .ql-color .ql-picker-options .ql-picker-item[data-value="black"],
+.ql-toolbar .ql-background .ql-picker-options .ql-picker-item[data-value="black"] {
+  background-color: #000000 !important;
+}
+
+.ql-toolbar .ql-color .ql-picker-options .ql-picker-item[data-value="white"],
+.ql-toolbar .ql-background .ql-picker-options .ql-picker-item[data-value="white"] {
+  background-color: #ffffff !important;
+  border: 1px solid #cccccc !important;
 }
 
 /* --- END --- */
