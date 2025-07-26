@@ -195,6 +195,26 @@
   max-width: none !important;
 }
 
+/* Одинаковый gap между группами и кнопками тулбара */
+.ql-toolbar, .ql-toolbar.ql-snow, .quill-toolbar-custom {
+  display: flex !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  width: 100% !important;
+  padding: 0 !important;
+  gap: 4px !important;
+}
+
+.ql-toolbar > span, .ql-toolbar.ql-snow > span, .quill-toolbar-custom > span {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.ql-toolbar button, .ql-toolbar.ql-snow button, .quill-toolbar-custom button {
+  margin: 0 !important;
+}
+
 @media (max-width: 768px) {
   body {
     overflow-x: hidden;
