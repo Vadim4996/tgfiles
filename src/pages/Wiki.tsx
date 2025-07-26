@@ -124,20 +124,20 @@ const Wiki: React.FC = () => {
           
           // Специальные размеры для picker элементов
           if (htmlEl.classList.contains('ql-picker')) {
-            htmlEl.style.minWidth = '60px';
-            htmlEl.style.height = '28px';
+            htmlEl.style.minWidth = '40px';
+            htmlEl.style.height = '24px';
             htmlEl.style.display = 'inline-flex';
             htmlEl.style.alignItems = 'center';
-            htmlEl.style.justifyContent = 'space-between';
+            htmlEl.style.justifyContent = 'center';
             
-            // Ещё большие размеры для стиля и цвета
+            // Немного большие размеры для стиля и цвета
             if (htmlEl.classList.contains('ql-header') || 
                 htmlEl.classList.contains('ql-color') || 
                 htmlEl.classList.contains('ql-background')) {
-              htmlEl.style.minWidth = '70px';
-              htmlEl.style.padding = '3px 8px';
-              htmlEl.style.fontSize = '12px';
-              htmlEl.style.fontWeight = '500';
+              htmlEl.style.minWidth = '45px';
+              htmlEl.style.padding = '3px 6px';
+              htmlEl.style.fontSize = '11px';
+              htmlEl.style.fontWeight = '400';
             }
           }
         }
