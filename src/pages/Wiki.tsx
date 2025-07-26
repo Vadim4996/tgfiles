@@ -114,9 +114,9 @@ const Wiki: React.FC = () => {
         if (el instanceof HTMLElement) {
           const htmlEl = el;
           htmlEl.style.background = '#ffffff';
-          htmlEl.style.color = '#ffffff';
-          htmlEl.style.fill = '#ffffff';
-          htmlEl.style.stroke = '#ffffff';
+          htmlEl.style.color = '#827574';
+          htmlEl.style.fill = '#827574';
+          htmlEl.style.stroke = '#827574';
           htmlEl.style.border = '1px solid #ffffff';
           htmlEl.style.borderRadius = '3px';
           htmlEl.style.margin = '1px';
@@ -143,15 +143,15 @@ const Wiki: React.FC = () => {
         }
       });
       
-      // Все SVG иконки - белые
+      // Все SVG иконки - #827574
       toolbar.querySelectorAll('svg').forEach(svg => {
         if (svg instanceof SVGElement) {
           const svgEl = svg;
-          svgEl.style.color = '#ffffff';
-          svgEl.style.fill = '#ffffff';
-          svgEl.style.stroke = '#ffffff';
-          svgEl.setAttribute('fill', '#ffffff');
-          svgEl.setAttribute('stroke', '#ffffff');
+          svgEl.style.color = '#827574';
+          svgEl.style.fill = '#827574';
+          svgEl.style.stroke = '#827574';
+          svgEl.setAttribute('fill', '#827574');
+          svgEl.setAttribute('stroke', '#827574');
         }
       });
       
@@ -161,35 +161,35 @@ const Wiki: React.FC = () => {
           const htmlEl = el;
           htmlEl.addEventListener('mouseover', () => {
             htmlEl.style.background = '#f0f0f0';
-            htmlEl.style.color = '#ffffff';
-            htmlEl.style.fill = '#ffffff';
-            htmlEl.style.stroke = '#ffffff';
+            htmlEl.style.color = '#827574';
+            htmlEl.style.fill = '#827574';
+            htmlEl.style.stroke = '#827574';
             htmlEl.style.borderColor = '#ffffff';
             htmlEl.querySelectorAll('svg').forEach(svg => {
               if (svg instanceof SVGElement) {
                 const svgEl = svg;
-                svgEl.style.color = '#ffffff';
-                svgEl.style.fill = '#ffffff';
-                svgEl.style.stroke = '#ffffff';
-                svgEl.setAttribute('fill', '#ffffff');
-                svgEl.setAttribute('stroke', '#ffffff');
+                svgEl.style.color = '#827574';
+                svgEl.style.fill = '#827574';
+                svgEl.style.stroke = '#827574';
+                svgEl.setAttribute('fill', '#827574');
+                svgEl.setAttribute('stroke', '#827574');
               }
             });
           });
           htmlEl.addEventListener('mouseout', () => {
             htmlEl.style.background = '#ffffff';
-            htmlEl.style.color = '#ffffff';
-            htmlEl.style.fill = '#ffffff';
-            htmlEl.style.stroke = '#ffffff';
+            htmlEl.style.color = '#827574';
+            htmlEl.style.fill = '#827574';
+            htmlEl.style.stroke = '#827574';
             htmlEl.style.borderColor = '#ffffff';
             htmlEl.querySelectorAll('svg').forEach(svg => {
               if (svg instanceof SVGElement) {
                 const svgEl = svg;
-                svgEl.style.color = '#ffffff';
-                svgEl.style.fill = '#ffffff';
-                svgEl.style.stroke = '#ffffff';
-                svgEl.setAttribute('fill', '#ffffff');
-                svgEl.setAttribute('stroke', '#ffffff');
+                svgEl.style.color = '#827574';
+                svgEl.style.fill = '#827574';
+                svgEl.style.stroke = '#827574';
+                svgEl.setAttribute('fill', '#827574');
+                svgEl.setAttribute('stroke', '#827574');
               }
             });
           });
@@ -201,18 +201,18 @@ const Wiki: React.FC = () => {
         if (el instanceof HTMLElement) {
           const htmlEl = el;
           htmlEl.style.background = '#e0e0e0';
-          htmlEl.style.color = '#ffffff';
-          htmlEl.style.fill = '#ffffff';
-          htmlEl.style.stroke = '#ffffff';
+          htmlEl.style.color = '#827574';
+          htmlEl.style.fill = '#827574';
+          htmlEl.style.stroke = '#827574';
           htmlEl.style.borderColor = '#ffffff';
           htmlEl.querySelectorAll('svg').forEach(svg => {
             if (svg instanceof SVGElement) {
               const svgEl = svg;
-              svgEl.style.color = '#ffffff';
-              svgEl.style.fill = '#ffffff';
-              svgEl.style.stroke = '#ffffff';
-              svgEl.setAttribute('fill', '#ffffff');
-              svgEl.setAttribute('stroke', '#ffffff');
+              svgEl.style.color = '#827574';
+              svgEl.style.fill = '#827574';
+              svgEl.style.stroke = '#827574';
+              svgEl.setAttribute('fill', '#827574');
+              svgEl.setAttribute('stroke', '#827574';
             }
           });
         }
