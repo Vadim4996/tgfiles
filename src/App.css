@@ -272,6 +272,28 @@
   border-radius: 3px !important;
   margin: 1px !important;
   padding: 3px 5px !important;
+  min-width: 60px !important;
+  height: 28px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+/* СПЕЦИАЛЬНО ДЛЯ КНОПОК ВЫБОРА СТИЛЯ И ЦВЕТА */
+.ql-toolbar .ql-picker.ql-header,
+.ql-toolbar .ql-picker.ql-color,
+.ql-toolbar .ql-picker.ql-background,
+.ql-toolbar.ql-snow .ql-picker.ql-header,
+.ql-toolbar.ql-snow .ql-picker.ql-color,
+.ql-toolbar.ql-snow .ql-picker.ql-background,
+.quill-toolbar-custom .ql-picker.ql-header,
+.quill-toolbar-custom .ql-picker.ql-color,
+.quill-toolbar-custom .ql-picker.ql-background {
+  min-width: 70px !important;
+  height: 28px !important;
+  padding: 3px 8px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
 }
 
 .ql-toolbar .ql-picker-label,
@@ -281,6 +303,12 @@
   fill: #333333 !important;
   stroke: #333333 !important;
   background: transparent !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 0 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  min-height: 20px !important;
 }
 
 .ql-toolbar .ql-picker-item,

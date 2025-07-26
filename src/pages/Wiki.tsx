@@ -121,6 +121,25 @@ const Wiki: React.FC = () => {
           htmlEl.style.borderRadius = '3px';
           htmlEl.style.margin = '1px';
           htmlEl.style.padding = '3px 5px';
+          
+          // Специальные размеры для picker элементов
+          if (htmlEl.classList.contains('ql-picker')) {
+            htmlEl.style.minWidth = '60px';
+            htmlEl.style.height = '28px';
+            htmlEl.style.display = 'inline-flex';
+            htmlEl.style.alignItems = 'center';
+            htmlEl.style.justifyContent = 'space-between';
+            
+            // Ещё большие размеры для стиля и цвета
+            if (htmlEl.classList.contains('ql-header') || 
+                htmlEl.classList.contains('ql-color') || 
+                htmlEl.classList.contains('ql-background')) {
+              htmlEl.style.minWidth = '70px';
+              htmlEl.style.padding = '3px 8px';
+              htmlEl.style.fontSize = '12px';
+              htmlEl.style.fontWeight = '500';
+            }
+          }
         }
       });
       
