@@ -465,6 +465,17 @@
   border: 1px solid #cccccc !important;
 }
 
+/* Центрирование иконок в кнопках выбора цвета текста и заливки */
+.ql-toolbar .ql-picker.ql-color .ql-picker-label svg,
+.ql-toolbar .ql-picker.ql-background .ql-picker-label svg,
+.ql-toolbar.ql-snow .ql-picker.ql-color .ql-picker-label svg,
+.ql-toolbar.ql-snow .ql-picker.ql-background .ql-picker-label svg {
+  margin-top: -2px !important;
+  padding-bottom: 4px !important;
+  display: inline-block;
+  vertical-align: middle;
+}
+
 /* --- END --- */
 
 @media (max-width: 768px) {
