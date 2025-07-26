@@ -152,6 +152,30 @@
   box-shadow: none !important;
 }
 
+/* Тулбар Quill: flex-контейнер, центрирование, равномерное распределение */
+.ql-toolbar, .ql-toolbar.ql-snow, .quill-toolbar-custom {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 0 !important;
+  width: 100% !important;
+}
+
+/* Кнопки тулбара: убираем margin, flex-grow */
+.ql-toolbar button, .ql-toolbar.ql-snow button, .quill-toolbar-custom button {
+  margin: 0 !important;
+  flex-grow: 1 !important;
+  flex-basis: 0 !important;
+}
+
+/* Группы кнопок (если есть) распределяем по ширине */
+.ql-toolbar > span, .ql-toolbar.ql-snow > span, .quill-toolbar-custom > span {
+  display: flex !important;
+  flex-grow: 1 !important;
+  justify-content: center !important;
+  gap: 0 !important;
+}
+
 @media (max-width: 768px) {
   body {
     overflow-x: hidden;
