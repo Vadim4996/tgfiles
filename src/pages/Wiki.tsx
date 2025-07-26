@@ -212,7 +212,7 @@ const Wiki: React.FC = () => {
               svgEl.style.fill = '#827574';
               svgEl.style.stroke = '#827574';
               svgEl.setAttribute('fill', '#827574');
-              svgEl.setAttribute('stroke', '#827574';
+              svgEl.setAttribute('stroke', '#827574');
             }
           });
         }
